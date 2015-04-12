@@ -49,6 +49,12 @@
     function sf() {
         <?php if (strlen($htm['query']) == 0) { echo 'document.getElementById("Q").focus();'; } ?>
     }
+    function moveSubject(href, serachWord, query) {
+        if(query == ""){
+            return ;
+        }
+        location.href = href + '?word=' + serachWord + query;
+    }
     //]]>
     </script>
 </head>
@@ -110,10 +116,10 @@
 | ƒJƒeƒSƒŠ‚Åi‚èž‚Þ:
 <select onchange="location.href=document.getElementById('h_php_self').value+'?Q='+document.getElementById('h_query_en').value+this.options[this.selectedIndex].value">
 <option value="">-</option>
-<?php foreach ($profile['categories'] as $c) { ?><option value="&amp;C=<?php echo $c->id; ?>"<?php if ($c->id == $htm['category']) { echo ' selected="selected"'; } ?>><?php echo p2h($c->name); ?> (<?php echo $c->hits; ?>)</option><?php } ?>
+<?php if(isset($profile['categories'])){ foreach ($profile['categories'] as $c) { ?><option value="&amp;C=<?php echo $c->id; ?>"<?php if ($c->id == $htm['category']) { echo ' selected="selected"'; } ?>><?php echo p2h($c->name); ?> (<?php echo $c->hits; ?>)</option><?php } } ?>
 </select>
 | ”Â‚Åi‚èž‚Þ:
-<select onchange="location.href=document.getElementById('h_subject_php').value+'?word='+document.getElementById('h_query_en').value+this.options[this.selectedIndex].value">
+<select onchange="moveSubject(document.getElementById('h_subject_php').value, document.getElementById('h_query_en').value, this.options[this.selectedIndex].value);">
 <option value="">-</option>
 <?php $m = ($htm['category'] && isset($profile['categories'][$htm['category']])) ? $profile['categories'][$htm['category']]->member : null; ?>
 <?php foreach ($profile['boards'] as $n => $b) { if (!$m || in_array($n, $m)) { ?><option value="<?php printf('&amp;host=%s&amp;bbs=%s&amp;itaj_en=%s', $b->host, $b->bbs, UrlSafeBase64::encode($b->name)); ?>"><?php echo p2h($b->name); ?> (<?php echo $b->hits; ?>)</option><?php } } ?>
