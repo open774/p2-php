@@ -430,7 +430,7 @@ if ($flags & P2_EDIT_CONF_USER_SKIPPED) {
         array('brocra_checker_url', 'ブラクラチェッカURL'),
         array('brocra_checker_query', 'ブラクラチェッカのクエリー (空の場合、PATH_INFOでURLを渡す)'),
         '板メニュー・お気に板',
-        array('join_favrank', '<a href="http://akid.s17.xrea.com/favrank/favrank.html" target="_blank">お気にスレ共有</a>に参加'),
+//      array('join_favrank', '<a href="http://akid.s17.xrea.com/favrank/favrank.html" target="_blank">お気にスレ共有</a>に参加'),
         array('merge_favita', 'お気に板のスレ一覧をまとめて表示 (お気に板の数によっては処理に時間がかかる)'),
         array('favita_order_dnd', 'ドラッグ＆ドロップでお気に板を並べ替える'),
         array('enable_menu_new', '板メニューに新着数を表示'),

@@ -497,9 +497,11 @@ $conf_user_rad['through_ime_http_only'] = array('1' => 'HTTPSでは直', '0' => '常
 // ゲートで自動転送しない拡張子（カンマ区切りで、拡張子の前のピリオドは不要）
 $conf_user_def['ime_manual_ext'] = "exe,zip"; // ("exe,zip")
 
+/* 
 // お気にスレ共有に参加（する:1, しない:0）
 $conf_user_def['join_favrank'] = 0; // (0)
 $conf_user_rad['join_favrank'] = array('1' => 'する', '0' => 'しない');
+ */
 
 // お気に板のスレ一覧をまとめて表示 (する:1, しない:0, 既得スレのみ:2)
 $conf_user_def['merge_favita'] = 0; // (0)

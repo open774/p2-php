@@ -138,6 +138,7 @@ function setFav($host, $bbs, $key, $setfav, $ttitle = null, $setnum = null)
         p2die('cannot write file.');
     }
 
+/* 
 
     //================================================
     // ‚¨‹C‚ÉƒXƒŒ‹¤—L
@@ -154,6 +155,8 @@ function setFav($host, $bbs, $key, $setfav, $ttitle = null, $setnum = null)
         $post = array("host" => $host, "bbs" => $bbs, "key" => $key, "ttitle" => $data[0], "ita" => $itaj, "act" => $act);
         postFavRank($post);
     }
+
+ */
 
     return true;
 }
