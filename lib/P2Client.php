@@ -3,7 +3,7 @@
 // {{{ P2Client
 
 /**
- * p2.2ch.net クライアント
+ * p2.2ch.sc クライアント
  */
 class P2Client
 {
@@ -82,21 +82,21 @@ class P2Client
     private $_rootUri;
 
     /**
-     * p2.2ch.net/モリタポ ログインID (メールアドレス)
+     * p2.2ch.sc/モリタポ ログインID (メールアドレス)
      *
      * @var string
      */
     private $_loginId;
 
     /**
-     * p2.2ch.net/モリタポ ログインパスワード
+     * p2.2ch.sc/モリタポ ログインパスワード
      *
      * @var string
      */
     private $_loginPass;
 
     /**
-     * p2.2ch.net Cookie認証時にIPアドレスの同一性をチェックしない
+     * p2.2ch.sc Cookie認証時にIPアドレスの同一性をチェックしない
      *
      * @var bool
      */

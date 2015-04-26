@@ -233,10 +233,10 @@ if ($flags & P2_EDIT_CONF_USER_SKIPPED) {
         array('be_2ch_DMDM', '<a href="http://be.2ch.net/" target="_blank">be.2ch.net</a>のDMDM(手動設定する場合のみ入力)', P2_EDIT_CONF_USER_LONGTEXT),
         array('be_2ch_MDMD', '<a href="http://be.2ch.net/" target="_blank">be.2ch.net</a>のMDMD(手動設定する場合のみ入力)', P2_EDIT_CONF_USER_LONGTEXT),
         '公式p2',
-        array('p2_2ch_host', '公式p2 (<a href="http://p2.2ch.net/" target="_blank">p2.2ch.net</a>) で割り当てられているサーバー', P2_EDIT_CONF_USER_LONGTEXT),
+        array('p2_2ch_host', '公式p2 (<a href="http://p2.2ch.sc/" target="_blank">p2.2ch.sc</a>) で割り当てられているサーバー', P2_EDIT_CONF_USER_LONGTEXT),
         array('p2_2ch_mail', '公式p2の登録メールアドレス', P2_EDIT_CONF_USER_LONGTEXT),
         array('p2_2ch_pass', '公式p2のログインパスワード', P2_EDIT_CONF_USER_LONGTEXT | P2_EDIT_CONF_USER_PASSWORD),
-        array('p2_2ch_ignore_cip', ' p2.2ch.net Cookie認証時にIPアドレスの同一性をチェック'),
+        array('p2_2ch_ignore_cip', ' p2.2ch.sc Cookie認証時にIPアドレスの同一性をチェック'),
     );
     printEditConfGroupHtml($groupname, $conflist, $flags);
 }
@@ -430,7 +430,7 @@ if ($flags & P2_EDIT_CONF_USER_SKIPPED) {
         array('brocra_checker_url', 'ブラクラチェッカURL'),
         array('brocra_checker_query', 'ブラクラチェッカのクエリー (空の場合、PATH_INFOでURLを渡す)'),
         '板メニュー・お気に板',
-        array('join_favrank', '<a href="http://akid.s17.xrea.com/favrank/favrank.html" target="_blank">お気にスレ共有</a>に参加'),
+//      array('join_favrank', '<a href="http://akid.s17.xrea.com/favrank/favrank.html" target="_blank">お気にスレ共有</a>に参加'),
         array('merge_favita', 'お気に板のスレ一覧をまとめて表示 (お気に板の数によっては処理に時間がかかる)'),
         array('favita_order_dnd', 'ドラッグ＆ドロップでお気に板を並べ替える'),
         array('enable_menu_new', '板メニューに新着数を表示'),

@@ -20,19 +20,19 @@ $conf_user_def['be_2ch_DMDM'] = ""; // ("")
 $conf_user_def['be_2ch_MDMD'] = ""; // ("")
 
 // }}}
-// {{{ p2.2ch.netアカウント
+// {{{ p2.2ch.scアカウント
 
-// p2.2ch.netのサーバー
-$conf_user_def['p2_2ch_host'] = "w1.p2.2ch.net"; // ("w1.p2.2ch.net")
-$conf_user_rules['p2_2ch_host'] = array('/^(?:w\\d+\\.)?p2\\.2ch\\.net$/');
+// p2.2ch.scのサーバー
+$conf_user_def['p2_2ch_host'] = "w1.p2.2ch.sc"; // ("w1.p2.2ch.sc")
+$conf_user_rules['p2_2ch_host'] = array('/^(?:w\\d+\\.)?p2\\.2ch\\.sc$/');
 
-// p2.2ch.netの登録メールアドレス
+// p2.2ch.scの登録メールアドレス
 $conf_user_def['p2_2ch_mail'] = ""; // ("")
 
-// p2.2ch.netのログインパスワード
+// p2.2ch.scのログインパスワード
 $conf_user_def['p2_2ch_pass'] = ""; // ("")
 
-// p2.2ch.net Cookie認証時にIPアドレスの同一性をチェック
+// p2.2ch.sc Cookie認証時にIPアドレスの同一性をチェック
 $conf_user_def['p2_2ch_ignore_cip'] = 0; // (0)
 $conf_user_rad['p2_2ch_ignore_cip'] = array('0' => 'チェックする', '1' => 'チェックしない');
 
@@ -497,9 +497,11 @@ $conf_user_rad['through_ime_http_only'] = array('1' => 'HTTPSでは直', '0' => '常
 // ゲートで自動転送しない拡張子（カンマ区切りで、拡張子の前のピリオドは不要）
 $conf_user_def['ime_manual_ext'] = "exe,zip"; // ("exe,zip")
 
+/* 
 // お気にスレ共有に参加（する:1, しない:0）
 $conf_user_def['join_favrank'] = 0; // (0)
 $conf_user_rad['join_favrank'] = array('1' => 'する', '0' => 'しない');
+ */
 
 // お気に板のスレ一覧をまとめて表示 (する:1, しない:0, 既得スレのみ:2)
 $conf_user_def['merge_favita'] = 0; // (0)
