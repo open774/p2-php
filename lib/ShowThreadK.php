@@ -1101,7 +1101,6 @@ EOP;
                 }
 
                 // オリジナルの有無を確認
-                $_src_url = '';
                 if (file_exists($this->thumbnailer->srcPath($icdb->size, $icdb->md5, $icdb->mime))) {
                     $src_exists = true;
                     $img_url = $img_url2 . $icdb->id;
