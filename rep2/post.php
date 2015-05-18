@@ -64,21 +64,24 @@ if (!empty($_POST['fix_source'])) {
     // タブをスペースに
     $MESSAGE = tab2space($MESSAGE);
     // 特殊文字を実体参照に
-    $MESSAGE = p2h($MESSAGE);
+    $MESSAGE = strtr(p2h($MESSAGE), array(
+        '&quot;' => '&#34;', // "
+        '&amp;'  => '&#38;', // &
+        '&apos;' => '&#39;', // '
+        '&lt;'   => '&#60;', // <
+        '&gt;'   => '&#62;', // >
+    ));
     // 自動URLリンク回避
     $MESSAGE = str_replace('tp://', 't&#112;://', $MESSAGE);
     // 行頭のスペースを実体参照に
-    $MESSAGE = preg_replace('/^ /m', '&nbsp;', $MESSAGE);
+    $MESSAGE = preg_replace('/^ /m', '&#160;', $MESSAGE);
     // 二つ続くスペースの一つ目を実体参照に
-    $MESSAGE = preg_replace('/(?<!&nbsp;)  /', '&nbsp; ', $MESSAGE);
+    $MESSAGE = preg_replace('/(?<!&#160;)  /', '&#160; ', $MESSAGE);
     // 奇数回スペースがくり返すときの仕上げ
-    $MESSAGE = preg_replace('/(?<=&nbsp;)  /', ' &nbsp;', $MESSAGE);
+    $MESSAGE = preg_replace('/(?<=&#160;)  /', ' &#160;', $MESSAGE);
 }
 
 // }}}
-
-// したらばのlivedoor移転に対応。post先をlivedoorとする。
-$host = P2Util::adjustHostJbbs($host);
 
 // machibbs、JBBS@したらば なら
 if (P2Util::isHostMachiBbs($host) or P2Util::isHostJbbsShitaraba($host)) {
@@ -86,6 +89,8 @@ if (P2Util::isHostMachiBbs($host) or P2Util::isHostJbbsShitaraba($host)) {
 
     // JBBS@したらば なら
     if (P2Util::isHostJbbsShitaraba($host)) {
+        // したらばの移転に対応。post先を現行に合わせる。
+        $host = P2Util::adjustHostJbbs($host);
         $bbs_cgi = '../../bbs/write.cgi';
         preg_match('/\\/(\\w+)$/', $host, $ar);
         $dir = $ar[1];
@@ -910,18 +915,15 @@ function tab2space($in_str, $tabwidth = 4, $linebreak = "\n")
     while ($i < $ln) {
         $parts = explode("\t", rtrim($lines[$i]));
         $pn = count($parts);
+        $l = $parts[0];
 
-        for ($j = 0; $j < $pn; $j++) {
-            if ($j == 0) {
-                $l = $parts[$j];
-            } else {
-                //$t = $tabwidth - (strlen($l) % $tabwidth);
-                $sn = $tabwidth - (mb_strwidth($l) % $tabwidth); // UTF-8でも全角文字幅を2とカウントする
-                for ($k = 0; $k < $sn; $k++) {
-                    $l .= ' ';
-                }
-                $l .= $parts[$j];
+        for ($j = 1; $j < $pn; $j++) {
+            //$t = $tabwidth - (strlen($l) % $tabwidth);
+            $sn = $tabwidth - (mb_strwidth($l) % $tabwidth); // UTF-8でも全角文字幅を2とカウントする
+            for ($k = 0; $k < $sn; $k++) {
+                $l .= ' ';
             }
+            $l .= $parts[$j];
         }
 
         $out_str .= $l;

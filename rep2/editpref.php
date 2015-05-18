@@ -8,7 +8,7 @@ require_once __DIR__ . '/../init.php';
 $_login->authorize(); // ユーザ認証
 
 $deltitles = array(
-    'cookie'    => 'Ccookie',
+    'cookie'    => 'Cookie',
     'matome'    => '新着まとめ読み',
     'recent'    => '最近読んだスレ',
     'reshist'  => '書き込み履歴',
