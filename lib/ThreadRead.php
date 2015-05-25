@@ -96,10 +96,12 @@ class ThreadRead extends Thread {
                 }
                 return $this->_downloadDat2chKako ($_GET['kakolog'], $ext);
 
-            // 2ch or 2chŒÝŠ·
+            /* 
+            // Offlaw2
             } elseif (P2Util::isHost2chs ($this->host) && ! empty ($_GET['shirokuma'])) {
                 return $this->_downloadDat2chMaru ($uaMona, $SID2ch, true);
 
+             */
             // 2ch ‚ÍAPIŒo—R‚Å—Ž‚Æ‚·
             } elseif (P2Util::isHost2chs ($this->host) && $_conf['2chapi_use'] && empty ($_GET['olddat'])) {
 
