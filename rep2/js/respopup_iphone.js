@@ -97,7 +97,7 @@ ipoputil.callback = function(req, url, popid, yOffset) {
 	$container.css('top',yOffset.toString() + 'px');
 	$container.css('z-index',ipoputil.getZ());
 	//respopŽ©‘Ì“™‚ð“à•”ˆµ‚¢‚É‚µ‚Ä‚¨‚­
-	$container.skOuterClick(ipoputil.getDeactivator($container, url),$("[id^=_respop]"),$('#ic2-info-body'),$('#ic2-info-closer'),$('#spm'),$('#spm-closer'));
+	$container.skOuterClick(ipoputil.getDeactivator($container, url),$("[id^=_respop]"),$('.close-button'),$('#ic2-info-body'),$('#ic2-info-closer'),$('#spm'),$('#spm-closer'));
 
 	$closer.addClass('close-button');
 	$closer.attr('src', 'img/iphone/close.png');

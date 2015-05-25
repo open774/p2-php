@@ -66,18 +66,10 @@ class ShowThreadPc extends ShowThread
         }
         if (isset($GLOBALS['replaceImageUrlCtl'])) {
             $this->_url_handlers[] = 'plugin_replaceImageUrl';
-        }
-        if (P2_IMAGECACHE_AVAILABLE == 2) {
-            $this->_url_handlers[] = 'plugin_imageCache2';
         } elseif ($_conf['preview_thumbnail']) {
             $this->_url_handlers[] = 'plugin_viewImage';
         }
         $this->_url_handlers[] = 'plugin_linkURL';
-
-        // imepitaのURLを加工してImageCache2させるプラグインを登録
-        if (P2_IMAGECACHE_AVAILABLE == 2) {
-            $this->addURLHandler(array($this, 'plugin_imepitaToImageCache2'));
-        }
 
         // サムネイル表示制限数を設定
         if (!isset($GLOBALS['pre_thumb_unlimited']) || !isset($GLOBALS['pre_thumb_limit'])) {
@@ -1367,180 +1359,6 @@ EOJS;
     }
 
     // }}}
-    // {{{ plugin_imageCache2()
-
-    /**
-     * ImageCache2サムネイル変換
-     *
-     * @param   string $url
-     * @param   array $purl
-     * @param   string $str
-     * @return  string|false
-     */
-    public function plugin_imageCache2($url, $purl, $str,
-                                       $force = false,
-                                       $referer = null)
-    {
-        static $serial = 0;
-
-        global $_conf;
-        global $pre_thumb_unlimited, $pre_thumb_ignore_limit, $pre_thumb_limit;
-
-        if (P2Util::isUrlWikipediaJa($url)) {
-            return false;
-        }
-
-        if ((preg_match('{^https?://.+?\\.(jpe?g|gif|png)$}i', $purl[0]) && empty($purl['query'])) || $force) {
-            // 準備
-            $serial++;
-            $thumb_id = 'thumbs' . $serial . $this->thumb_id_suffix;
-            $tmp_thumb = './img/ic_load.png';
-            $url_ht = $url;
-            $url = $purl[0];
-            $url_en = rawurlencode($url) .
-                ($referer ? '&amp;ref=' . rawurlencode($referer) : '');
-            $img_id = null;
-
-            $icdb = new ImageCache2_DataObject_Images();
-
-            // r=0:リンク;r=1:リダイレクト;r=2:PHPで表示
-            // t=0:オリジナル;t=1:PC用サムネイル;t=2:携帯用サムネイル;t=3:中間イメージ
-            $img_url = 'ic2.php?r=1&amp;uri=' . $url_en;
-            $thumb_url = 'ic2.php?r=1&amp;t=1&amp;uri=' . $url_en;
-            // お気にスレ自動画像ランク
-            $rank = null;
-            if ($_conf['expack.ic2.fav_auto_rank']) {
-                $rank = $this->getAutoFavRank();
-                if ($rank !== null) {
-                    $thumb_url .= '&rank=' . $rank;
-                }
-            }
-
-            // DBに画像情報が登録されていたとき
-            if ($icdb->get($url)) {
-                $img_id = $icdb->id;
-
-                // ウィルスに感染していたファイルのとき
-                if ($icdb->mime == 'clamscan/infected') {
-                    return "<img class=\"thumbnail\" src=\"./img/x04.png\" width=\"32\" height=\"32\" hspace=\"4\" vspace=\"4\" align=\"middle\"> <s>{$str}</s>";
-                }
-                // あぼーん画像のとき
-                if ($icdb->rank < 0) {
-                    return "<img class=\"thumbnail\" src=\"./img/x01.png\" width=\"32\" height=\"32\" hspace=\"4\" vspace=\"4\" align=\"middle\"> <s>{$str}</s>";
-                }
-
-                // オリジナルがキャッシュされているときは画像を直接読み込む
-                if (file_exists($this->thumbnailer->srcPath($icdb->size, $icdb->md5, $icdb->mime))) {
-                    $img_url = $this->thumbnailer->srcUrl($icdb->size, $icdb->md5, $icdb->mime);
-                    $cached = true;
-                } else {
-                    $cached = false;
-                }
-
-                // サムネイルが作成されていているときは画像を直接読み込む
-                if (file_exists($this->thumbnailer->thumbPath($icdb->size, $icdb->md5, $icdb->mime))) {
-                    $thumb_url = $this->thumbnailer->thumbUrl($icdb->size, $icdb->md5, $icdb->mime);
-                    // 自動スレタイメモ機能がONでスレタイが記録されていないときはDBを更新
-                    if (!is_null($this->img_memo) && strpos($icdb->memo, $this->img_memo) === false){
-                        $update = new ImageCache2_DataObject_Images();
-                        if (!is_null($icdb->memo) && strlen($icdb->memo) > 0) {
-                            $update->memo = $this->img_memo . ' ' . $icdb->memo;
-                        } else {
-                            $update->memo = $this->img_memo;
-                        }
-                        $update->whereAddQuoted('uri', '=', $url);
-                    }
-
-                    // expack.ic2.fav_auto_rank_override の設定とランク条件がOKなら
-                    // お気にスレ自動画像ランクを上書き更新
-                    if ($rank !== null &&
-                            self::isAutoFavRankOverride($icdb->rank, $rank)) {
-                        if ($update === null) {
-                            $update = new ImageCache2_DataObject_Images();
-                            $update->whereAddQuoted('uri', '=', $url);
-                        }
-                        $update->rank = $rank;
-                    }
-
-                    if ($update !== null) {
-                        $update->update();
-                    }
-                }
-
-                // サムネイルの画像サイズ
-                $thumb_size = $this->thumbnailer->calc($icdb->width, $icdb->height);
-                $thumb_size = preg_replace('/(\d+)x(\d+)/', 'width="$1" height="$2"', $thumb_size);
-                $tmp_thumb = './img/ic_load1.png';
-
-                $orig_img_url   = $img_url;
-                $orig_thumb_url = $thumb_url;
-
-            // 画像がキャッシュされていないとき
-            // 自動スレタイメモ機能がONならクエリにUTF-8エンコードしたスレタイを含める
-            } else {
-                // 画像がブラックリストorエラーログにあるか確認
-                if (false !== ($errcode = $icdb->ic2_isError($url))) {
-                    return "<img class=\"thumbnail\" src=\"./img/{$errcode}.png\" width=\"32\" height=\"32\" hspace=\"4\" vspace=\"4\" align=\"middle\"> <s>{$str}</s>";
-                }
-
-                $cached = false;
-
-                $orig_img_url   = $img_url;
-                $orig_thumb_url = $thumb_url;
-                $img_url .= $this->img_memo_query;
-                $thumb_url .= $this->img_memo_query;
-                $thumb_size = '';
-                $tmp_thumb = './img/ic_load2.png';
-            }
-
-            // キャッシュされておらず、表示数制限が有効のとき
-            if (!$cached && !$pre_thumb_unlimited && !$pre_thumb_ignore_limit) {
-                // 表示制限を超えていたら、表示しない
-                // 表示制限を超えていなければ、表示制限カウンタを下げる
-                if ($pre_thumb_limit <= 0) {
-                    $show_thumb = false;
-                } else {
-                    $show_thumb = true;
-                    $pre_thumb_limit--;
-                }
-            } else {
-                $show_thumb = true;
-            }
-
-            // 表示モード
-            if ($show_thumb) {
-                $img_tag = "<img class=\"thumbnail\" src=\"{$thumb_url}\" {$thumb_size} hspace=\"4\" vspace=\"4\" align=\"middle\">";
-                if ($_conf['iframe_popup']) {
-                    $view_img = $this->imageHtmlPopup($img_url, $img_tag, $str);
-                } else {
-                    $view_img = "<a href=\"{$img_url}\"{$_conf['ext_win_target_at']}>{$img_tag}{$str}</a>";
-                }
-            } else {
-                $img_tag = "<img id=\"{$thumb_id}\" class=\"thumbnail\" src=\"{$tmp_thumb}\" width=\"32\" height=\"32\" hspace=\"4\" vspace=\"4\" align=\"middle\">";
-                $view_img = "<a href=\"{$img_url}\" onclick=\"return loadThumb('{$thumb_url}','{$thumb_id}')\"{$_conf['ext_win_target_at']}>{$img_tag}</a><a href=\"{$img_url}\"{$_conf['ext_win_target_at']}>{$str}</a>";
-            }
-
-            // ソースへのリンクをime付きで表示
-            if ($_conf['expack.ic2.enabled'] && $_conf['expack.ic2.through_ime']) {
-                $ime_url = P2Util::throughIme($url);
-                if ($_conf['iframe_popup'] == 3) {
-                    $ime_mark = '<img src="img/ime.png" width="22" height="12" alt="">';
-                } else {
-                    $ime_mark = '[ime]';
-                }
-                $view_img .= " <a class=\"img_through_ime\" href=\"{$ime_url}\"{$_conf['ext_win_target_at']}>{$ime_mark}</a>";
-            }
-
-            $view_img .= '<img class="ic2-info-opener" src="img/s2a.png" width="16" height="16" onclick="ic2info.show('
-                       . (($img_id) ? $img_id : "'{$url_ht}'") . ', event)">';
-
-            return $view_img;
-        }
-
-        return false;
-    }
-
-    // }}}
     // {{{ plugin_replaceImageUrl()
 
     /**
@@ -1712,30 +1530,6 @@ EOJS;
         return $GLOBALS['linkPluginCtl']->replaceLinkToHTML($url, $str);
     }
 
-    // }}}
-    // {{{ plugin_imepitaToImageCache2()
-
-    /**
-     * imepitaのURLを加工してImageCache2させるプラグイン
-     *
-     * @param   string $url
-     * @param   array $purl
-     * @param   string $str
-     * @return  string|false
-     */
-    public function plugin_imepitaToImageCache2($url, $purl, $str)
-    {
-        if (preg_match('{^https?://imepita\.jp/(?:image/)?(\d{8}/\d{6})}i',
-                $purl[0], $m) && empty($purl['query'])) {
-            $_url = 'http://imepita.jp/image/' . $m[1];
-            $_purl = @parse_url($_url);
-            $_purl[0] = $_url;
-            return $this->plugin_imageCache2($_url, $_purl, $str, true, $url);
-        }
-        return false;
-    }
-
-    // }}}
     // }}}
     // {{{ getQuotebacksJson()
 

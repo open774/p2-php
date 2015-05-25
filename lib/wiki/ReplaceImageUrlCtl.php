@@ -222,7 +222,7 @@ class ReplaceImageUrlCtl extends WikiPluginCtlBase
                 break;
             }
         }
-        /* plugin_imageCache2で処理させるためコメントアウト
+        /* plugin_imageCache2で処理させるためコメントアウト ← plugin_imageCache2を削除する為復活 by 2ch774*/
         // ヒットしなかった場合
         if (!$return[0]) {
             // 画像っぽいURLの場合
@@ -231,7 +231,6 @@ class ReplaceImageUrlCtl extends WikiPluginCtlBase
                 $return[0]['referer'] = '';
             }
         }
-        */
         return $this->_reply($url, $return);
     }
 
