@@ -2071,6 +2071,7 @@ ERR;
      * @param void
      * @return P2Client
      */
+/* 
     static public function getP2Client()
     {
         global $_conf;
@@ -2089,7 +2090,7 @@ ERR;
             p2die($e->getMessage());
         }
     }
-
+ */
     // }}}
     // {{{ rawurlencodeCallback()
 

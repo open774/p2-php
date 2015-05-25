@@ -78,6 +78,7 @@ class ThreadRead extends Thread {
                 include $_conf['sid2ch_php'];
                 return $this->_downloadDat2chMaru ($uaMona, $SID2ch);
 
+            /* 
             // 2ch bbspink モリタポ読み
             } elseif (P2Util::isHost2chs ($this->host) && ! empty ($_GET['moritapodat']) && $_conf['p2_2ch_mail'] && $_conf['p2_2ch_pass']) {
                 if (! array_key_exists ('csrfid', $_GET) || $this->_getCsrfIdForMoritapoDat () != $_GET['csrfid']) {
@@ -85,6 +86,7 @@ class ThreadRead extends Thread {
                 }
                 return $this->_downloadDat2chMoritapo ();
 
+             */
             // 2chの過去ログ倉庫読み
             } elseif (! empty ($_GET['kakolog']) && ! empty ($_GET['kakoget'])) {
                 if ($_GET['kakoget'] == 1) {
@@ -583,7 +585,7 @@ class ThreadRead extends Thread {
             return $this->downloadDat ();
         } else {
             $remarutori_ht = $this->_generateMarutoriLink (true);
-            $moritori_ht = $this->_generateMoritapoDatLink ();
+        //  $moritori_ht = $this->_generateMoritapoDatLink ();
             $this->getdat_error_msg_ht .= "<p>rep2 info: ●IDでのスレッド取得に失敗しました。{$remarutori_ht}{$moritori_ht}</p>";
             $this->diedat = true;
             return false;
@@ -756,7 +758,7 @@ class ThreadRead extends Thread {
             $dat_response_status = "このスレッドは過去ログ倉庫に格納されています。";
             $marutori_ht = $this->_generateMarutoriLink ();
             $plugin_ht = $this->_generateWikiDatLink ($read_url);
-            $moritori_ht = $this->_generateMoritapoDatLink ();
+        //  $moritori_ht = $this->_generateMoritapoDatLink ();
             $dat_response_msg = "<p>2ch info - このスレッドは過去ログ倉庫に格納されています。{$marutori_ht}{$moritori_ht}{$plugin_ht}</p>";
 
         // <title>がそんな板orスレッドないです。or error 3939
@@ -778,7 +780,7 @@ class ThreadRead extends Thread {
             } elseif (preg_match ($waithtml_match, $read_response_html, $matches)) {
                 $dat_response_status = "隊長! スレッドはhtml化されるのを待っているようです。";
                 $marutori_ht = $this->_generateMarutoriLink ();
-                $moritori_ht = $this->_generateMoritapoDatLink ();
+            //  $moritori_ht = $this->_generateMoritapoDatLink ();
                 $dat_response_msg = "<p>2ch info - 隊長! スレッドはhtml化されるのを待っているようです。{$marutori_ht}{$moritori_ht}</p>";
             } elseif (preg_match ($vip2ch_kakodat_match, $read_response_html, $matches)) {
                 $dat_response_status = "隊長! 過去ログ倉庫で、datを発見しました。";
@@ -1578,7 +1580,7 @@ EOP;
             $atext = "●IDでrep2に取り込む";
         }
         $marutori_ht = " [<a href=\"{$_conf['read_php']}?host={$this->host}&amp;bbs={$this->bbs}&amp;key={$this->key}&amp;ls={$this->ls}&amp;maru=true{$retry_q}{$_conf['k_at_a']}\">{$atext}</a>]";
-        $marutori_ht .= " [<a href=\"{$_conf['read_php']}?host={$this->host}&amp;bbs={$this->bbs}&amp;key={$this->key}&amp;ls={$this->ls}&amp;shirokuma=true{$_conf['k_at_a']}\">offlaw経由でrep2に取り込む</a>]";
+    //  $marutori_ht .= " [<a href=\"{$_conf['read_php']}?host={$this->host}&amp;bbs={$this->bbs}&amp;key={$this->key}&amp;ls={$this->ls}&amp;shirokuma=true{$_conf['k_at_a']}\">offlaw経由でrep2に取り込む</a>]";
         return $marutori_ht;
     }
     // }}}

@@ -510,6 +510,7 @@ function postIt($host, $bbs, $key, $post)
  *
  * @return boolean èëÇ´çûÇ›ê¨å˜Ç»ÇÁ trueÅAé∏îsÇ»ÇÁ false
  */
+/* 
 function postIt2($host, $bbs, $key, $FROM, $mail, $MESSAGE)
 {
     if (P2Util::isHostBe2chNet($host) || !empty($_REQUEST['beres'])) {
@@ -539,6 +540,7 @@ function postIt2($host, $bbs, $key, $FROM, $mail, $MESSAGE)
     return $posted;
 }
 
+ */
 // }}}
 // {{{ showPostMsg()
 

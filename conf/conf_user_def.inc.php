@@ -21,7 +21,7 @@ $conf_user_def['be_2ch_MDMD'] = ""; // ("")
 
 // }}}
 // {{{ p2.2ch.netアカウント
-
+/* 
 // p2.2ch.netのサーバー
 $conf_user_def['p2_2ch_host'] = "w1.p2.2ch.net"; // ("w1.p2.2ch.net")
 $conf_user_rules['p2_2ch_host'] = array('/^(?:w\\d+\\.)?p2\\.2ch\\.net$/');
@@ -35,6 +35,7 @@ $conf_user_def['p2_2ch_pass'] = ""; // ("")
 // p2.2ch.net Cookie認証時にIPアドレスの同一性をチェック
 $conf_user_def['p2_2ch_ignore_cip'] = 0; // (0)
 $conf_user_rad['p2_2ch_ignore_cip'] = array('0' => 'チェックする', '1' => 'チェックしない');
+ */
 
 // }}}
 // {{{ PATH
