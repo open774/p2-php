@@ -179,15 +179,6 @@ if (P2Util::isHost2chs($host) and P2Util::isEnableBe2ch()) {
                   . '<label for="beres">Beで書き込む</label>';
 }
 
-/* 
-// 公式p2
-if ((P2Util::isHost2chs($host) || P2Util::isHostMachiBbs($host)) &&
-    $_conf['p2_2ch_mail'] && $_conf['p2_2ch_pass'])
-{
-    $htm['p2res'] = '<input type="checkbox" id="p2res" name="p2res" value="1"'. $hd['p2res_checked'] . '>'
-                  . '<label for="p2res">公式p2で書き込む</label>';
-}
- */
 // }}}
 // {{{ 書き込みブロック用チェックボックス
 
