@@ -203,7 +203,8 @@ PostDataStore::set($post_backup_key, $post_cache);
 // ポスト実行
 if (!empty($_POST['p2res']) && empty($_POST['newthread'])) {
     // 公式p2で書き込み
-    $posted = postIt2($host, $bbs, $key, $FROM, $mail, $MESSAGE);
+//  $posted = postIt2($host, $bbs, $key, $FROM, $mail, $MESSAGE);
+    ;;
 } else {
     // cookie 読み込み
     $cookie_key = $_login->user_u . '/' . P2Util::normalizeHostName(P2Util::isHostBbsPink($host) ? 'www.bbspink.com' : P2Util::isHost2chs($host) ? 'www.2ch.net' : $host); // 忍法帳対応
