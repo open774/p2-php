@@ -87,12 +87,6 @@ class ThreadRead extends Thread {
                 }
                 return $this->_downloadDat2chKako ($_GET['kakolog'], $ext);
 
-            /* 
-            // Offlaw2
-            } elseif (P2Util::isHost2chs ($this->host) && ! empty ($_GET['shirokuma'])) {
-                return $this->_downloadDat2chMaru ($uaMona, $SID2ch, true);
-
-             */
             // 2ch はAPI経由で落とす
             } elseif (P2Util::isHost2chs ($this->host) && $_conf['2chapi_use'] && empty ($_GET['olddat'])) {
 
@@ -498,16 +492,10 @@ class ThreadRead extends Thread {
             return false;
         }
 
-        // GET /test/offlaw.cgi?bbs=板名&key=スレッド番号&sid=セッションID HTTP/1.1
-        // $url = "http://{$this->host}/test/offlaw.cgi/{$this->bbs}/{$this->key}/?raw=0.0&sid=";
-        if (! $shirokuma) {
-            // 浪人対応
-            $rokkasystem = explode (".", $this->host, 2);
-            $url = "http://rokka.$rokkasystem[1]/$rokkasystem[0]/{$this->bbs}/{$this->key}/?raw=0.0&sid=";
-            $url .= rawurlencode ($SID2ch);
-        } else {
-            $url = "http://{$this->host}/test/offlaw2.so?shiro=kuma&bbs={$this->bbs}&key={$this->key}&sid=ERROR";
-        }
+        // 浪人対応
+        $rokkasystem = explode (".", $this->host, 2);
+        $url = "http://rokka.$rokkasystem[1]/$rokkasystem[0]/{$this->bbs}/{$this->key}/?raw=0.0&sid=";
+        $url .= rawurlencode ($SID2ch);
         $purl = parse_url ($url); // URL分解
 
         try {
@@ -1409,7 +1397,6 @@ EOP;
             $atext = "●IDでrep2に取り込む";
         }
         $marutori_ht = " [<a href=\"{$_conf['read_php']}?host={$this->host}&amp;bbs={$this->bbs}&amp;key={$this->key}&amp;ls={$this->ls}&amp;maru=true{$retry_q}{$_conf['k_at_a']}\">{$atext}</a>]";
-    //  $marutori_ht .= " [<a href=\"{$_conf['read_php']}?host={$this->host}&amp;bbs={$this->bbs}&amp;key={$this->key}&amp;ls={$this->ls}&amp;shirokuma=true{$_conf['k_at_a']}\">offlaw経由でrep2に取り込む</a>]";
         return $marutori_ht;
     }
     // }}}
