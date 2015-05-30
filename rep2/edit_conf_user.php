@@ -220,7 +220,7 @@ EOP;
 // {{{ rep2基本設定
 // {{{ 'be/p2'
 
-$groupname = 'be/p2';
+$groupname = 'be';
 $groups[] = $groupname;
 $flags = getGroupShowFlags($groupname);
 if ($flags & P2_EDIT_CONF_USER_SKIPPED) {
@@ -232,11 +232,6 @@ if ($flags & P2_EDIT_CONF_USER_SKIPPED) {
         array('be_2ch_password', '<a href="http://be.2ch.net/" target="_blank">be.2ch.net</a>のパスワード(認証コードは使えなくなりました)', P2_EDIT_CONF_USER_PASSWORD),
         array('be_2ch_DMDM', '<a href="http://be.2ch.net/" target="_blank">be.2ch.net</a>のDMDM(手動設定する場合のみ入力)', P2_EDIT_CONF_USER_LONGTEXT),
         array('be_2ch_MDMD', '<a href="http://be.2ch.net/" target="_blank">be.2ch.net</a>のMDMD(手動設定する場合のみ入力)', P2_EDIT_CONF_USER_LONGTEXT),
-        '公式p2',
-        array('p2_2ch_host', '公式p2 (<a href="http://p2.2ch.net/" target="_blank">p2.2ch.net</a>) で割り当てられているサーバー', P2_EDIT_CONF_USER_LONGTEXT),
-        array('p2_2ch_mail', '公式p2の登録メールアドレス', P2_EDIT_CONF_USER_LONGTEXT),
-        array('p2_2ch_pass', '公式p2のログインパスワード', P2_EDIT_CONF_USER_LONGTEXT | P2_EDIT_CONF_USER_PASSWORD),
-        array('p2_2ch_ignore_cip', ' p2.2ch.net Cookie認証時にIPアドレスの同一性をチェック'),
     );
     printEditConfGroupHtml($groupname, $conflist, $flags);
 }

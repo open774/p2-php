@@ -78,13 +78,6 @@ class ThreadRead extends Thread {
                 include $_conf['sid2ch_php'];
                 return $this->_downloadDat2chMaru ($uaMona, $SID2ch);
 
-            // 2ch bbspink モリタポ読み
-            } elseif (P2Util::isHost2chs ($this->host) && ! empty ($_GET['moritapodat']) && $_conf['p2_2ch_mail'] && $_conf['p2_2ch_pass']) {
-                if (! array_key_exists ('csrfid', $_GET) || $this->_getCsrfIdForMoritapoDat () != $_GET['csrfid']) {
-                    p2die ('不正なリクエストです');
-                }
-                return $this->_downloadDat2chMoritapo ();
-
             // 2chの過去ログ倉庫読み
             } elseif (! empty ($_GET['kakolog']) && ! empty ($_GET['kakoget'])) {
                 if ($_GET['kakoget'] == 1) {
@@ -93,10 +86,6 @@ class ThreadRead extends Thread {
                     $ext = '.dat';
                 }
                 return $this->_downloadDat2chKako ($_GET['kakolog'], $ext);
-
-            // 2ch or 2ch互換
-            } elseif (P2Util::isHost2chs ($this->host) && ! empty ($_GET['shirokuma'])) {
-                return $this->_downloadDat2chMaru ($uaMona, $SID2ch, true);
 
             // 2ch はAPI経由で落とす
             } elseif (P2Util::isHost2chs ($this->host) && $_conf['2chapi_use'] && empty ($_GET['olddat'])) {
@@ -503,16 +492,10 @@ class ThreadRead extends Thread {
             return false;
         }
 
-        // GET /test/offlaw.cgi?bbs=板名&key=スレッド番号&sid=セッションID HTTP/1.1
-        // $url = "http://{$this->host}/test/offlaw.cgi/{$this->bbs}/{$this->key}/?raw=0.0&sid=";
-        if (! $shirokuma) {
-            // 浪人対応
-            $rokkasystem = explode (".", $this->host, 2);
-            $url = "http://rokka.$rokkasystem[1]/$rokkasystem[0]/{$this->bbs}/{$this->key}/?raw=0.0&sid=";
-            $url .= rawurlencode ($SID2ch);
-        } else {
-            $url = "http://{$this->host}/test/offlaw2.so?shiro=kuma&bbs={$this->bbs}&key={$this->key}&sid=ERROR";
-        }
+        // 浪人対応
+        $rokkasystem = explode (".", $this->host, 2);
+        $url = "http://rokka.$rokkasystem[1]/$rokkasystem[0]/{$this->bbs}/{$this->key}/?raw=0.0&sid=";
+        $url .= rawurlencode ($SID2ch);
         $purl = parse_url ($url); // URL分解
 
         try {
@@ -583,7 +566,6 @@ class ThreadRead extends Thread {
             return $this->downloadDat ();
         } else {
             $remarutori_ht = $this->_generateMarutoriLink (true);
-            $moritori_ht = $this->_generateMoritapoDatLink ();
             $this->getdat_error_msg_ht .= "<p>rep2 info: ●IDでのスレッド取得に失敗しました。{$remarutori_ht}{$moritori_ht}</p>";
             $this->diedat = true;
             return false;
@@ -756,7 +738,6 @@ class ThreadRead extends Thread {
             $dat_response_status = "このスレッドは過去ログ倉庫に格納されています。";
             $marutori_ht = $this->_generateMarutoriLink ();
             $plugin_ht = $this->_generateWikiDatLink ($read_url);
-            $moritori_ht = $this->_generateMoritapoDatLink ();
             $dat_response_msg = "<p>2ch info - このスレッドは過去ログ倉庫に格納されています。{$marutori_ht}{$moritori_ht}{$plugin_ht}</p>";
 
         // <title>がそんな板orスレッドないです。or error 3939
@@ -778,7 +759,6 @@ class ThreadRead extends Thread {
             } elseif (preg_match ($waithtml_match, $read_response_html, $matches)) {
                 $dat_response_status = "隊長! スレッドはhtml化されるのを待っているようです。";
                 $marutori_ht = $this->_generateMarutoriLink ();
-                $moritori_ht = $this->_generateMoritapoDatLink ();
                 $dat_response_msg = "<p>2ch info - 隊長! スレッドはhtml化されるのを待っているようです。{$marutori_ht}{$moritori_ht}</p>";
             } elseif (preg_match ($vip2ch_kakodat_match, $read_response_html, $matches)) {
                 $dat_response_status = "隊長! 過去ログ倉庫で、datを発見しました。";
@@ -1178,167 +1158,6 @@ class ThreadRead extends Thread {
     }
 
     // }}}
-    // {{{ _generateMoritapoDatLink()
-
-    /**
-     * 公式p2で(dat取得権限がない場合はモリタポを消費して)datを取得するためのリンクを生成する。
-     *
-     * @param
-     *            void
-     * @return string
-     */
-    protected function _generateMoritapoDatLink() {
-        global $_conf;
-
-        if ($_conf['p2_2ch_mail'] && $_conf['p2_2ch_pass']) {
-            $csrfid = $this->_getCsrfIdForMoritapoDat ();
-            $query = p2h ('host=' . rawurlencode ($this->host) . '&bbs=' . rawurlencode ($this->bbs) . '&key=' . rawurlencode ($this->key) . '&ls=' . rawurlencode ($this->ls) . '&moritapodat=true' . '&csrfid=' . rawurlencode ($csrfid));
-            return " [<a href=\"{$_conf['read_php']}?{$query}{$_conf['k_at_a']}\">モリタポでrep2に取り込む</a>]";
-        } else {
-            return '';
-        }
-    }
-
-    // }}}
-    // {{{ _downloadDat2chMoritapo()
-
-    /**
-     * 公式p2で(dat取得権限がない場合はモリタポを消費して)datを取得する
-     *
-     * @param
-     *            void
-     * @return bool
-     */
-    protected function _downloadDat2chMoritapo() {
-        global $_conf;
-
-        // datをダウンロード
-        try {
-            $client = P2Util::getP2Client ();
-            $body = $client->downloadDat ($this->host, $this->bbs, $this->key, $response);
-            // DEBUG
-            /*
-             * $GLOBALS['_downloadDat2chMoritapo_response_dump'] = '<pre>' . p2h(print_r($response, true)) . '</pre>';
-             * register_shutdown_function(create_function('', 'echo $GLOBALS[\'_downloadDat2chMoritapo_response_dump\'];'));
-             */
-        } catch (P2Exception $e) {
-            p2die ($e->getMessage ());
-        }
-
-        // データ検証その1
-        if (! $body || (strpos ($body, '<>') === false && strpos ($body, ',') === false)) {
-            return $this->_downloadDat2chMoritapoNotFound ();
-        }
-
-        // 改行位置を検出
-        $posCR = strpos ($body, "\r");
-        $posLF = strpos ($body, "\n");
-        if ($posCR === false && $posLF === false) {
-            $pos = strlen ($body);
-        } elseif ($posCR === false) {
-            $pos = $posLF;
-        } elseif ($posLF === false) {
-            $pos = $posCR;
-        } else {
-            $pos = min ($posLF, $posCR);
-        }
-
-        // 1行目の取得とデータ検証その2
-        $firstLine = rtrim (substr ($body, 0, $pos));
-        if (strpos ($firstLine, '<>') !== false) {
-            $this->dat_type = '2ch';
-        } elseif (strpos ($firstLine, ',') !== false) {
-            $this->dat_type = '2ch_old';
-        } else {
-            return $this->_downloadDat2chMoritapoNotFound ();
-        }
-
-        // データ検証その3 (タイトル = $ar[4])
-        $ar = $this->explodeDatLine ($firstLine);
-        if (count ($ar) < 5) {
-            return $this->_downloadDat2chMoritapoNotFound ();
-        }
-
-        // ローカルdatに書き込み
-        if (FileCtl::file_write_contents ($this->keydat, $body) === false) {
-            p2die ('cannot write file. downloadDat2chMoritapo()');
-        }
-
-        return true;
-    }
-
-    // }}}
-    // {{{ _downloadDat2chMoritapoNotFound()
-
-    /**
-     * モリタポでの取得ができなかったときに呼び出される
-     *
-     * @param
-     *            void
-     * @return bool
-     */
-    protected function _downloadDat2chMoritapoNotFound() {
-        global $_conf;
-
-        $csrfid = $this->_getCsrfIdForMoritapoDat ();
-
-        $host_en = rawurlencode ($this->host);
-        $bbs_en = rawurlencode ($this->bbs);
-        $key_en = rawurlencode ($this->key);
-        $ls_en = rawurlencode ($this->ls);
-
-        $host_ht = p2h ($this->host);
-        $bbs_ht = p2h ($this->bbs);
-        $key_ht = p2h ($this->key);
-        $ls_ht = p2h ($this->ls);
-
-        $query_ht = p2h ("host={$host_en}&bbs={$bbs_en}&key={$key_en}&ls={$ls_en}&maru=true");
-        $marutori_ht = $this->_generateMarutoriLink ();
-
-        if ($hosts = $this->scanOriginalHosts ()) {
-            $hostlist_ht = '<br>datから他のホスト候補を検出しました。';
-            foreach ($hosts as $host) {
-                $hostlist_ht .= " [<a href=\"#\" onclick=\"this.parentNode.elements['host'].value='{$host}';return false;\">{$host}</a>]";
-            }
-        } else {
-            $hostlist_ht = '';
-        }
-
-        $this->getdat_error_msg_ht .= <<<EOF
-<p>rep2 info: モリタポでのスレッド取得に失敗しました。{$marutori_ht}</p>
-<form action="{$_conf['read_php']}" method="get">
-    ホストを
-    <input type="text" name="host" value="{$host_ht}" size="12">
-    <input type="hidden" name="bbs" value="{$bbs_ht}">
-    <input type="hidden" name="key" value="{$key_ht}">
-    <input type="hidden" name="ls" value="{$ls_ht}">
-    に変えて
-    <input type="submit" name="moritapodat" value="モリタポでrep2に取り込んでみる">
-    <input type="hidden" name="csrfid" value="{$csrfid}">
-    {$hostlist_ht}
-    {$_conf['k_input_ht']}
-</form>\n
-EOF;
-        $this->diedat = true;
-
-        return false;
-    }
-
-    // }}}
-    // {{{ _getCsrfIdForMoritapoDat()
-
-    /**
-     * 公式p2からdatを取得する際に使うCSRF防止トークンを生成する
-     *
-     * @param
-     *            void
-     * @return string
-     */
-    protected function _getCsrfIdForMoritapoDat() {
-        return P2Util::getCsrfId ('moritapodat' . $this->host . $this->bbs . $this->key);
-    }
-
-    // }}}
     // {{{ _pushInfoMessage()
 
     /**
@@ -1578,7 +1397,6 @@ EOP;
             $atext = "●IDでrep2に取り込む";
         }
         $marutori_ht = " [<a href=\"{$_conf['read_php']}?host={$this->host}&amp;bbs={$this->bbs}&amp;key={$this->key}&amp;ls={$this->ls}&amp;maru=true{$retry_q}{$_conf['k_at_a']}\">{$atext}</a>]";
-        $marutori_ht .= " [<a href=\"{$_conf['read_php']}?host={$this->host}&amp;bbs={$this->bbs}&amp;key={$this->key}&amp;ls={$this->ls}&amp;shirokuma=true{$_conf['k_at_a']}\">offlaw経由でrep2に取り込む</a>]";
         return $marutori_ht;
     }
     // }}}

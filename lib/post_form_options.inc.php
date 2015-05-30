@@ -165,7 +165,7 @@ EOP;
 }
 
 // }}}
-// {{{ ●/Be/公式p2 書き込み チェックボックス
+// {{{ ●/Be 書き込み チェックボックス
 
 //  2ch●書き込み
 if (P2Util::isHost2chs($host) and file_exists($_conf['sid2ch_php'])) {
@@ -177,14 +177,6 @@ if (P2Util::isHost2chs($host) and file_exists($_conf['sid2ch_php'])) {
 if (P2Util::isHost2chs($host) and P2Util::isEnableBe2ch()) {
     $htm['beres'] = '<input type="checkbox" id="beres" name="beres" value="1"'. $hd['beres_checked'] . '>'
                   . '<label for="beres">Beで書き込む</label>';
-}
-
-// 公式p2
-if ((P2Util::isHost2chs($host) || P2Util::isHostMachiBbs($host)) &&
-    $_conf['p2_2ch_mail'] && $_conf['p2_2ch_pass'])
-{
-    $htm['p2res'] = '<input type="checkbox" id="p2res" name="p2res" value="1"'. $hd['p2res_checked'] . '>'
-                  . '<label for="p2res">公式p2で書き込む</label>';
 }
 
 // }}}

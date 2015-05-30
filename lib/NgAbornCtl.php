@@ -244,9 +244,11 @@ class NgAbornCtl {
         $data = array();
 
         if ($lines = FileCtl::file_read_lines($file)) {
+            // 外に出して高速化
+            $replace_pairs = array('<' => '&lt;', '>' => '&gt;');
             foreach ($lines as $l) {
                 $lar = explode("\t", trim($l));
-                if (strlen($lar[0]) == 0) {
+                if ($lar[0] === '') {
                     continue;
                 }
                 $ar = array(
@@ -264,64 +266,55 @@ class NgAbornCtl {
                     $data[] = $ar;
                     continue;
                 }
-
-                // 板縛り
-                if (preg_match('!<bbs>(.+?)</bbs>!', $ar['word'], $matches)) {
-                    $ar['bbs'] = explode(',', $matches[1]);
-                }
-                $ar['word'] = preg_replace('!<bbs>(.*)</bbs>!', '', $ar['word']);
-
-                // タイトル縛り
-                if (preg_match('!<title>(.+?)</title>!', $ar['word'], $matches)) {
-                    $ar['title'] = $matches[1];
-                }
-                $ar['word'] = preg_replace('!<title>(.*)</title>!', '', $ar['word']);
-
-                // 正規表現
-                if (preg_match('/^<(mb_ereg|preg_match|regex)(:[imsxeADSUXu]+)?>(.+)$/', $ar['word'], $matches)) {
-                    // マッチング関数とパターンを設定
-                    if ($matches[1] == 'regex') {
-                        if (P2_MBREGEX_AVAILABLE) {
-                            $ar['regex'] = 'mb_ereg';
-                            $ar['word'] = $matches[3];
-                        } else {
-                            $ar['regex'] = 'preg_match';
-                            $ar['word'] = '/' . str_replace('/', '\\/', $matches[3]) . '/';
-                        }
-                    } else {
-                        $ar['regex'] = $matches[1];
-                        $ar['word'] = $matches[3];
+                // 内容解析(edit_aborn_word.php通りなら必ずこの順番になる)
+                if (preg_match('{^(?:<(regex|regexi|i)>)?(?:<bbs>(.+?)</bbs>)?(?:<title>(.+?)</title>)?(.+)$}s', $ar['word'], $matches)) {
+                    switch ($matches[1]) {
+                        // 正規表現
+                        case "regex":
+                            if (P2_MBREGEX_AVAILABLE) {
+                                $ar['regex'] = 'mb_ereg';
+                                $ar['word'] = $matches[4];
+                            } else {
+                                $ar['regex'] = 'preg_match';
+                                $ar['word'] = '/' . str_replace('/', '\\/', $matches[4]) . '/';
+                            }
+                            break;
+                        // 正規表現・大文字小文字を無視
+                        case 'regexi':
+                            if (P2_MBREGEX_AVAILABLE) {
+                                $ar['regex'] = 'mb_eregi';
+                                $ar['word'] = $matches[4];
+                            } else {
+                                $ar['regex'] = 'preg_match';
+                                $ar['word'] = '/' . str_replace('/', '\\/', $matches[4]) . '/i';
+                            }
+                            break;
+                        // 大文字小文字を無視
+                        case 'i':
+                            $ar['word'] = $matches[4];
+                            $ar['ignorecase'] = true;
+                        default:
+                            // エスケープされていない特殊文字をエスケープ
+                            // $ar['word'] = p2h($ar['word'], false);
+                            // 2chの仕様上、↑は期待通りの結果が得られないことが多いので、<>だけ実体参照にする
+                            $ar['word'] = strtr($matches[4], $replace_pairs);
+                            break;
                     }
-                    // 大文字小文字を無視
-                    if ($matches[2] && strpos($matches[2], 'i') !== false) {
-                        if ($ar['regex'] == 'mb_ereg') {
-                            $ar['regex'] = 'mb_eregi';
-                        } else {
-                            $ar['word'] .= 'i';
-                        }
+                    // 板縛り
+                    if ($matches[2] !== '') {
+                        $ar['bbs'] = explode(',', $matches[2]);
                     }
-                // 大文字小文字を無視
-                } elseif (preg_match('/^<i>(.+)$/', $ar['word'], $matches)) {
-                    $ar['word'] = $matches[1];
-                    $ar['ignorecase'] = true;
+                    // タイトル縛り
+                    if ($matches[3] !== '') {
+                        $ar['title'] = $matches[3];
+                    }
                 }
-
-                // 正規表現でないなら、エスケープされていない特殊文字をエスケープ
-                /*if (!$ar['regex']) {
-                    $ar['word'] = p2h($ar['word'], false);
-                }*/
-                // 2chの仕様上、↑は期待通りの結果が得られないことが多いので、<>だけ実体参照にする
-                if (!$ar['regex']) {
-                    $ar['word'] = str_replace(array('<', '>'), array('&lt;', '&gt;'), $ar['word']);
-                }
-
                 $data[] = $ar;
             }
         }
 
         return array('file' => $file, 'data' => $data);
     }
-
     // }}}
 }
 

@@ -2063,34 +2063,6 @@ ERR;
     }
 
     // }}}
-    // {{{ getP2Client()
-
-    /**
-     * P2Clientクラスのインスタンスを生成する
-     *
-     * @param void
-     * @return P2Client
-     */
-    static public function getP2Client()
-    {
-        global $_conf;
-
-        if (!is_dir($_conf['db_dir'])) {
-            FileCtl::mkdirRecursive($_conf['db_dir']);
-        }
-
-        try {
-            return new P2Client("http://{$_conf['p2_2ch_host']}/p2/",
-                                $_conf['p2_2ch_mail'],
-                                $_conf['p2_2ch_pass'],
-                                $_conf['db_dir'],
-                                (bool)$_conf['p2_2ch_ignore_cip']);
-        } catch (P2Exception $e) {
-            p2die($e->getMessage());
-        }
-    }
-
-    // }}}
     // {{{ rawurlencodeCallback()
 
     /**

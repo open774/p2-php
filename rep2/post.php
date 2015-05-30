@@ -200,37 +200,31 @@ PostDataStore::set($post_config_key, array(
 // 書き込みを一時的に保存
 PostDataStore::set($post_backup_key, $post_cache);
 
-// ポスト実行
-if (!empty($_POST['p2res']) && empty($_POST['newthread'])) {
-    // 公式p2で書き込み
-    $posted = postIt2($host, $bbs, $key, $FROM, $mail, $MESSAGE);
-} else {
-    // cookie 読み込み
-    $cookie_key = $_login->user_u . '/' . P2Util::normalizeHostName(P2Util::isHostBbsPink($host) ? 'www.bbspink.com' : P2Util::isHost2chs($host) ? 'www.2ch.net' : $host); // 忍法帳対応
-    if ($p2cookies = CookieDataStore::get($cookie_key)) {
-        if (is_array($p2cookies)) {
-            if (array_key_exists('expires', $p2cookies)) {
-                // 期限切れなら破棄
-                if (time() > strtotime($p2cookies['expires'])) {
-                    CookieDataStore::delete($cookie_key);
-                    $p2cookies = null;
-                }
+// cookie 読み込み
+$cookie_key = $_login->user_u . '/' . P2Util::normalizeHostName(P2Util::isHostBbsPink($host) ? 'www.bbspink.com' : P2Util::isHost2chs($host) ? 'www.2ch.net' : $host); // 忍法帳対応
+if ($p2cookies = CookieDataStore::get($cookie_key)) {
+    if (is_array($p2cookies)) {
+        if (array_key_exists('expires', $p2cookies)) {
+            // 期限切れなら破棄
+            if (time() > strtotime($p2cookies['expires'])) {
+                CookieDataStore::delete($cookie_key);
+                $p2cookies = null;
             }
-        } else {
-            CookieDataStore::delete($cookie_key);
-            $p2cookies = null;
         }
     } else {
+        CookieDataStore::delete($cookie_key);
         $p2cookies = null;
     }
+} else {
+    $p2cookies = null;
+}
 
-    // 直接書き込み
-    $posted = postIt($host, $bbs, $key, $post);
+// 直接書き込み
+$posted = postIt($host, $bbs, $key, $post);
 
-    // cookie 保存
-    if ($p2cookies) {
-        CookieDataStore::set($cookie_key, $p2cookies);
-    }
+// cookie 保存
+if ($p2cookies) {
+    CookieDataStore::set($cookie_key, $p2cookies);
 }
 
 // 投稿失敗記録を削除
@@ -500,43 +494,6 @@ function postIt($host, $bbs, $key, $post)
         echo preg_replace('@こちらでリロードしてください。<a href="\\.\\./[a-z]+/index\\.html"> GO! </a><br>@', '', $body);
         return false;
     }
-}
-
-// }}}
-// {{{ postIt2()
-
-/**
- * 公式p2でレスを書き込む
- *
- * @return boolean 書き込み成功なら true、失敗なら false
- */
-function postIt2($host, $bbs, $key, $FROM, $mail, $MESSAGE)
-{
-    if (P2Util::isHostBe2chNet($host) || !empty($_REQUEST['beres'])) {
-        $beRes = true;
-    } else {
-        $beRes = false;
-    }
-
-    try {
-        $posted = P2Util::getP2Client()->post($host, $bbs, $key,
-                                              $FROM, $mail, $MESSAGE,
-                                              $beRes, $response);
-    } catch (P2Exception $e) {
-        p2die('公式p2ポスト失敗', $e->getMessage());
-    }
-
-    if ($posted) {
-        $reload = empty($_POST['from_read_new']);
-        showPostMsg(true, '書きこみが終わりました。', $reload);
-    } else {
-        $result_msg = '公式p2ポスト失敗</p>'
-                    . '<pre>' . p2h($response['body']) . '</pre>'
-                    . '<p>-';
-        showPostMsg(false, $result_msg, false);
-    }
-
-    return $posted;
 }
 
 // }}}
