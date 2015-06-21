@@ -253,6 +253,17 @@ class ThreadRead extends Thread {
                     $body = substr ($body, 1);
                 }
 
+                // 2行目を切り出す
+                $lines = explode("\n", $body);
+                $secondmsg = $lines[1];
+
+                // 2行目が過去ログであることを示しているようであれば過去ログリンクを表示
+                if (mb_strpos ($secondmsg, "２ちゃんねる ★<><>2015/05/31(日) 00:00:00.00 ID:????????<> このスレッドは過去ログです。") === 0) {
+                    return $this->_downloadDat2chNotFound ('302');
+                }
+                unset ($secondmsg);
+                unset ($lines);
+
                 $file_append = ($zero_read) ? 0 : FILE_APPEND;
 
                 if (FileCtl::file_write_contents ($this->keydat, $body, $file_append) === false) {
