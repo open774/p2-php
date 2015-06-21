@@ -370,7 +370,6 @@ if ($flags & P2_EDIT_CONF_USER_SKIPPED) {
 } else {
     $conflist = array(
         array('2chapi_use','2ch API を使用する'),
-        array('2chapi_rounin','2ch API 認証時に●(浪人)IDを送信する(人柱機能)'),
         array('2chapi_interval','2ch API 認証する間隔(単位:時間)'),
         'API認証情報(全て必須)',
         array('2chapi_appkey','AppKey', P2_EDIT_CONF_USER_LONGTEXT),

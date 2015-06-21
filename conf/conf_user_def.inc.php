@@ -373,10 +373,6 @@ $conf_user_rad['ngaborn_purge_aborn'] = array('1' => 'はい', '0' => 'いいえ');
 $conf_user_def['2chapi_use'] = 0; // (0)
 $conf_user_rad['2chapi_use'] = array('1' => 'する', '0' => 'しない');
 
-// 2ch API 認証時に●(浪人)IDを送信する
-$conf_user_def['2chapi_rounin'] = 0; // (0)
-$conf_user_rad['2chapi_rounin'] = array('1' => 'する', '0' => 'しない');
-
 // 2ch API 認証する間隔(単位:時間)
 $conf_user_def['2chapi_interval'] = 1; // (1)
 $conf_user_rules['2chapi_interval'] = array('emptyToDef', 'notIntExceptMinusToDef');
