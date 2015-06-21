@@ -487,23 +487,73 @@ class ThreadRead extends Thread {
      */
     protected function _downloadDat2chMaru($uaMona, $SID2ch, $shirokuma = false) {
         global $_conf;
+        global $debug;
 
-        if (! ($this->host && $this->bbs && $this->key && $this->keydat)) {
+        if (! ($this->host && $this->bbs && $this->key)) {
             return false;
         }
 
-        // 浪人対応
-        $rokkasystem = explode (".", $this->host, 2);
-        $url = "http://rokka.$rokkasystem[1]/$rokkasystem[0]/{$this->bbs}/{$this->key}/?raw=0.0&sid=";
-        $url .= rawurlencode ($SID2ch);
+        $AppKey = $_conf['2chapi_appkey'];
+        $AppName = $_conf['2chapi_appname'];
+        $HMKey = $_conf['2chapi_hmkey'];
+        $ReadUA = sprintf ($_conf['2chapi_ua.read'], $AppName);
+
+        if ($SID2ch == '') {
+            return false;
+        }
+
+        $from_bytes = intval ($from_bytes);
+
+        if ($from_bytes == 0) {
+            $zero_read = true;
+        } else {
+            $zero_read = false;
+            $from_bytes = $from_bytes - 1;
+        }
+
+        $serverName = explode ('.', $this->host);
+        // $url = "http://{$this->host}/{$this->bbs}/dat/{$this->key}.dat";
+        // $url="http://news2.2ch.net/test/read.cgi?bbs=newsplus&key=1038486598";
+
+        if($_conf['2chapi_ssl.read']) {
+            $url = 'https://api.2ch.net/v1/';
+        } else {
+            $url = 'http://api.2ch.net/v1/';
+        }
+
+        $url .= $serverName[0] . '/' . $this->bbs . '/' . $this->key;
+        $message = '/v1/' . $serverName[0] . '/' . $this->bbs . '/' . $this->key . $SID2ch . $AppKey;
+        $HB = hash_hmac ("sha256", $message, $HMKey);
+
         $purl = parse_url ($url); // URL分解
 
         try {
-            $req = P2Util::getHTTPRequest2 ($url, HTTP_Request2::METHOD_GET);
-            // ヘッダ
-            $req->setHeader ('User-Agent', "{$uaMona} ({$_conf['p2ua']})");
+            $req = P2Util::getHTTPRequest2 ($url, HTTP_Request2::METHOD_POST);
 
-            // Requestの送信
+            // ヘッダ
+            $req->setHeader ('User-Agent', $ReadUA);
+
+            if (! $zero_read) {
+                $req->setHeader ('Range', sprintf ('bytes=%d-', $from_bytes) );
+            }
+
+            if ($this->modified) {
+                $req->setHeader ('If-Modified-Since', $this->modified);
+            }
+
+            // Basic認証用のヘッダ
+            if (isset ($purl['user']) && isset ($purl['pass'])) {
+                $req->setAuth ($purl['user'], $purl['pass'], HTTP_Request2::AUTH_BASIC);
+            }
+
+            // POSTする内容
+            $req->addPostParameter (array (
+                    'sid' => $SID2ch,
+                    'hobo' => $HB,
+                    'appkey' => $AppKey
+            ));
+
+            // POSTデータの送信
             $response = $req->send ();
 
             $code = $response->getStatus ();
@@ -515,25 +565,48 @@ class ThreadRead extends Thread {
 
                 $this->modified = $response->getHeader ('Last-Modified');
 
-                if (FileCtl::file_write_contents ($this->keydat, $body, 0) === false) {
-                    p2die ('cannot write file. downloadDat2chMaru()');
+                // 1行目を切り出す
+                $posLF = mb_strpos ($body, "\n");
+                $firstmsg = mb_substr ($body, 0, $posLF === false ? mb_strlen ($body) : $posLF);
+
+                // ngで始まってたらapiのエラーの可能性
+                if (preg_match ("/^ng \((.*)\)$/", $firstmsg)) {
+                    $this->getdat_error_msg_ht .= "<p>rep2 error: API経由での浪人 ID のスレッド取得に失敗しました。" . $firstmsg . "</p>";
+                    $this->getdat_error_msg_ht .= " [<a href=\"{$_conf['read_php']}?host={$this->host}&amp;bbs={$this->bbs}&amp;key={$this->key}&amp;ls={$this->ls}&amp;relogin2chapi=true\">APIで再取得を試みる</a>]";
+                    $this->getdat_error_msg_ht .= $this->_generateMarutoriLink (true);
+                    $this->getdat_error_msg_ht .= " [<a href=\"{$_conf['read_php']}?host={$this->host}&amp;bbs={$this->bbs}&amp;key={$this->key}&amp;ls={$this->ls}&amp;olddat=true\">旧datで再取得を試みる</a>]";
+                    $this->diedat = true;
+                    return false;
+                }
+                unset ($firstmsg);
+
+                // 末尾の改行であぼーんチェック
+                if (! $zero_read) {
+                    if (substr ($body, 0, 1) != "\n") {
+                        // echo "あぼーん検出";
+                        $this->onbytes = 0;
+                        $this->modified = null;
+                        return $this->_downloadDat2chMaru($uaMona, $SID2ch, $shirokuma); // datサイズは不正。全部取り直し。
+                    }
+                    $body = substr ($body, 1);
                 }
 
-                // クリーニング =====
-                if ($marudatlines = FileCtl::file_read_lines ($this->keydat)) {
-                    if (! $shirokuma) {
-                        $firstline = array_shift ($marudatlines);
-                        // チャンクとか
-                        if (strpos ($firstline, 'Success') === false) { // 浪人(rokka)対応
-                            $secondline = array_shift ($marudatlines);
-                        }
-                    }
-                    $cont = '';
-                    foreach ($marudatlines as $aline) {
-                        $cont .= $aline;
-                    }
-                    if (FileCtl::file_write_contents ($this->keydat, $cont) === false) {
-                        p2die ('cannot write file. downloadDat2chMaru()');
+                $file_append = ($zero_read) ? 0 : FILE_APPEND;
+
+                if (FileCtl::file_write_contents ($this->keydat, $body, $file_append) === false) {
+                    p2die ('cannot write file.');
+                }
+
+                // $GLOBALS['debug'] && $GLOBALS['profiler']->enterSection("dat_size_check");
+                // 取得後サイズチェック
+                if ($zero_read == false && $this->onbytes) {
+                    $this->getDatBytesFromLocalDat (); // $aThread->length をset
+                    if ($this->onbytes != $this->length) {
+                        $this->onbytes = 0;
+                        $this->modified = null;
+                        P2Util::pushInfoHtml ("<p>rep2 info: {$this->onbytes}/{$this->length} ファイルサイズが変なので、datを再取得</p>");
+                        // $GLOBALS['debug'] && $GLOBALS['profiler']->leaveSection("dat_size_check");
+                        return $this->_downloadDat2chMaru($uaMona, $SID2ch, $shirokuma); // datサイズは不正。全部取り直し。
                     }
                 }
 
