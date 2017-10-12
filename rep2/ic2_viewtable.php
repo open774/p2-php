@@ -51,7 +51,7 @@ $db = $table->getDatabaseConnection();
 if (isset($_POST['clean'])) {
     $sql = 'DELETE FROM ' . $db->quoteIdentifier($table->__table);
     $result = $db->query($sql);
-    if (DB::isError($result)) {
+    if (PEAR::isError($result)) {
         p2die($result->getMessage());
     }
 } elseif (isset($_POST['delete']) && isset($_POST['target']) && is_array($_POST['target'])) {

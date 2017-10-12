@@ -19,6 +19,11 @@ $_conf['expack.ic2.general.cacheuri'] = './ic';
 // 注2: MySQL,PosrgreSQLでは予めデータベースを作っておく。
 $_conf['expack.ic2.general.dsn'] = "";
 
+// DBに接続するためのドライバー（DB or MDB2）
+// DB: sqlite3非対応、メンテされていないが現時点で安定している。
+// MDB2: sqlite3等に幅広く対応可能人柱（scripts/ic2.php setupが未実装なので使用不可）
+// $_conf['expack.ic2.general.db_driver'] = "DB";
+
 // DBで使うテーブル名
 $_conf['expack.ic2.general.table'] = "imgcache";
 

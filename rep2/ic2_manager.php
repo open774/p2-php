@@ -31,7 +31,7 @@ if ($ini['Viewer']['cache'] && file_exists($_conf['iv2_cache_db_path'])) {
 
 // データベースに接続
 $db = DB::connect($ini['General']['dsn']);
-if (DB::isError($db)) {
+if (PEAR::isError($db)) {
     p2die($db->getMessage());
 }
 
@@ -70,10 +70,10 @@ if (isset($_POST['action'])) {
                         default: $expires = null;
                     }
                     if ($expires !== null) {
-                        $operator = ($_POST['dropZeroSelectType'] == 'within') ? '>' : '<';
+                        $oPEARtor = ($_POST['dropZeroSelectType'] == 'within') ? '>' : '<';
                         $where .= sprintf(' AND %s %s %d',
                             $db->quoteIdentifier('time'),
-                            $operator,
+                            $oPEARtor,
                             time() - $expires);
                     }
                 }
@@ -90,7 +90,7 @@ if (isset($_POST['action'])) {
                 $db->quoteIdentifier($ini['General']['table']),
                 $where);
             $result = $db->getAll($sql, null, DB_FETCHMODE_ORDERED | DB_FETCHMODE_FLIPPED);
-            if (DB::isError($result)) {
+            if (PEAR::isError($result)) {
                 P2Util::pushInfoHtml($result->getMessage());
                 break;
             }
@@ -148,7 +148,7 @@ if (isset($_POST['action'])) {
         // エラーログを消去する
         case 'clearErrorLog':
             $result = $db->query('DELETE FROM ' . $db->quoteIdentifier($ini['General']['error_table']));
-            if (DB::isError($result)) {
+            if (PEAR::isError($result)) {
                 P2Util::pushInfoHtml($result->getMessage());
             } else {
                 P2Util::pushInfoHtml('<p>エラーログを消去しました。</p>');
@@ -158,7 +158,7 @@ if (isset($_POST['action'])) {
         // ブラックリストを消去する
         case 'clearBlackList':
             $result = $db->query('DELETE FROM ' . $db->quoteIdentifier($ini['General']['blacklist_table']));
-            if (DB::isError($result)) {
+            if (PEAR::isError($result)) {
                 P2Util::pushInfoHtml($result->getMessage());
             } else {
                 P2Util::pushInfoHtml('<p>ブラックリストを消去しました。</p>');
@@ -170,7 +170,7 @@ if (isset($_POST['action'])) {
             // SQLite2 の画像キャッシュデータベースをVACUUM
             if ($db->dsn['phptype'] == 'sqlite') {
                 $result = $db->query('VACUUM');
-                if (DB::isError($result)) {
+                if (PEAR::isError($result)) {
                     P2Util::pushInfoHtml($result->getMessage());
                 } else {
                     P2Util::pushInfoHtml('<p>画像データベースを最適化しました。</p>');

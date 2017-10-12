@@ -32,8 +32,13 @@ class ImageCache2_DataObject_Common extends DB_DataObject
         // データベースへ接続
         $this->_database_dsn = $ini['General']['dsn'];
         $this->_db = $this->getDatabaseConnection();
-        if (DB::isError($this->_db)) {
+        if (PEAR::isError($this->_db)) {
             p2die($this->_db->getMessage());
+        }
+
+        // MDB2の拡張モジュール読込み
+        if ($this->_ini['General']['db_driver'] == 'MDB2') {
+            $this->_db->loadModule('Extended');
         }
 
         // クライアントの文字セットに UTF-8 を指定
@@ -79,7 +84,8 @@ class ImageCache2_DataObject_Common extends DB_DataObject
         $types = $this->table();
         $col = $this->_db->quoteIdentifier($key);
         if ($types[$key] != DB_DATAOBJECT_INT) {
-            $value = $this->_db->quoteSmart($value);
+        	$db_quote = ($this->_ini['General']['db_driver'] == 'MDB2') ? 'quote' : 'quoteSmart';
+            $value = $this->_db->$db_quote($value);
         }
         $cond = sprintf('%s %s %s', $col, $cmp, $value);
         return $this->whereAdd($cond, $logic);

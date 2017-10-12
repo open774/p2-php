@@ -177,7 +177,9 @@ if ($_conf['ktai']) {
 // DB_DataObject‚ğŒp³‚µ‚½DAO
 $icdb = new ImageCache2_DataObject_Images();
 $db = $icdb->getDatabaseConnection();
+
 $db_class = strtolower(get_class($db));
+$db_getOne = ($ini['General']['db_driver'] == 'MDB2') ? 'queryOne' : 'getOne'; 
 
 if ($ini['Viewer']['cache']) {
     $kvs = P2KeyValueStore::getStore($_conf['iv2_cache_db_path'],
@@ -205,7 +207,7 @@ if ($ini['Viewer']['cache']) {
         // SQLite‚È‚çVACUUM‚ğÀs
         if ($db_class == 'db_sqlite') {
             $result = $db->query('VACUUM');
-            if (DB::isError($result)) {
+            if (PEAR::isError($result)) {
                 p2die($result->getMessage());
             }
         }
@@ -579,8 +581,8 @@ if (isset($_POST['edit_submit']) && !empty($_POST['change'])) {
 //$all = (int)$icdb->count('*', true);
 //$db->setFetchMode(DB_FETCHMODE_ASSOC);
 $sql = sprintf('SELECT COUNT(*) FROM %s %s', $db->quoteIdentifier($ini['General']['table']), $icdb->_query['condition']);
-$all = (int)$db->getOne($sql);
-if (DB::isError($all)) {
+$all = (int)$db->$db_getOne($sql);
+if (PEAR::isError($all)) {
     p2die($all->getMessage());
 }
 

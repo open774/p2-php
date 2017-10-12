@@ -57,7 +57,7 @@ function ic2_loadconfig()
         $_dao_options['database'] = $ini['General']['dsn'];
         $_dao_options['debug'] = false;
         $_dao_options['quote_identifiers'] = true;
-        $_dao_options['db_driver'] = 'DB';
+        $_dao_options['db_driver'] = ($ini['General']['db_driver'] == 'MDB2') ? 'MDB2' : 'DB';
     }
 
     return $ini;

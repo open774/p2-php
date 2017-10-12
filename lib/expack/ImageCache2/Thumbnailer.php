@@ -109,7 +109,7 @@ class ImageCache2_Thumbnailer
         // データベースに接続
         $icdb = new ImageCache2_DataObject_Images();
         $this->db = $icdb->getDatabaseConnection();
-        if (DB::isError($this->db)) {
+        if (PEAR::isError($this->db)) {
             $this->error($this->db->getMessage());
         }
 
@@ -593,8 +593,9 @@ class ImageCache2_Thumbnailer
         }
         $sql = 'SELECT MAX(' . $this->db->quoteIdentifier('id') . ') + 1 FROM '
              . $this->db->quoteIdentifier($this->ini['General']['table']) . ';';
-        $nextid = $this->db->getOne($sql);
-        if (DB::isError($nextid) || !$nextid) {
+        $db_getOne = ($this->ini['General']['db_driver'] == 'MDB2') ? 'queryOne' : 'getOne'; 
+        $nextid = $this->db->$db_getOne($sql);
+        if (PEAR::isError($nextid) || !$nextid) {
             $nextid = 1;
         }
         return str_pad(ceil($nextid / 1000), 5, 0, STR_PAD_LEFT);

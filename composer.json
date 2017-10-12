@@ -9,7 +9,11 @@
     },
     {
       "type": "vcs",
-      "url": "https://github.com/2ch774/quickform"
+      "url": "https://github.com/open774/quickform"
+    },
+    {
+      "type": "vcs",
+      "url": "https://github.com/open774/MDB2_Driver_sqlite3"
     }
   ],
   "require": {
@@ -20,12 +24,16 @@
     "pear-pear.php.net/benchmark": "1.2.9",
     "pear-pear.php.net/cache_lite": "1.7.15",
     "pear-pear.php.net/db": "1.7.14",
-    "pear-pear.php.net/db_dataobject": "1.11.2",
+    "pear-pear.php.net/MDB2": "2.5.0b5",
+    "pear-pear.php.net/MDB2_Driver_mysqli": "1.5.0b4",
+    "pear-pear.php.net/MDB2_Driver_pgsql": "1.5.0b4",
+    "pear-pear.php.net/db_dataobject": "1.11.5",
     "pear-pear.php.net/date": "1.4.7",
     "pear-pear.php.net/file": "1.4.1",
     "pear-pear.php.net/file_util": "1.0.0",
     "pear-pear.php.net/html_common": "1.2.5",
     "2ch774/quickform": "dev-master",
+    "pear/mdb2_driver_sqlite3": "dev-master",
     "pear-pear.php.net/http_request2": "2.2.1",
     "pear-pear.php.net/net_socket": "1.0.10",
     "pear-pear.php.net/net_url": "1.0.15",

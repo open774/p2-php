@@ -47,15 +47,16 @@ class ImageCache2_DataObject_Errors extends ImageCache2_DataObject_Common
             $sql3 = 'DELETE FROM ' . $q_table . ' WHERE occured = ';
 
             while (($r1 = $this->_db->getOne($sql1)) > $error_log_num) {
-                if (DB::isError($r1)) {
+                if (PEAR::isError($r1)) {
                     return $r1;
                 }
-                $r2 = $this->_db->getOne($sql2);
-                if (DB::isError($r2)) {
+                $method = ($db_driver  == 'DB') ? 'getOne' : 'queryOne';
+                $r2 = $this->_db->$method($sql2);
+                if (PEAR::isError($r2)) {
                     return $r2;
                 }
                 $r3 = $this->_db->query($sql3 . $r2);
-                if (DB::isError($r3)) {
+                if (PEAR::isError($r3)) {
                     return $r3;
                 }
                 if ($this->_db->affectedRows() == 0) {

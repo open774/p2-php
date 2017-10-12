@@ -16,6 +16,7 @@ function getIC2ImageCount($key, $threshold = null) {
     }
 
     $db = $icdb->getDatabaseConnection();
+    $db_getOne = ($ini['General']['db_driver'] == 'MDB2') ? 'queryOne' : 'getOne'; 
     $db_class = strtolower(get_class($db));
     $keys = explode(' ', $icdb->uniform($key, 'CP932'));
     foreach ($keys as $k) {
@@ -48,8 +49,8 @@ function getIC2ImageCount($key, $threshold = null) {
     }
 
     $sql = sprintf('SELECT COUNT(*) FROM %s %s', $db->quoteIdentifier($ini['General']['table']), $icdb->_query['condition']);
-    $all = $db->getOne($sql);
-    if (DB::isError($all)) {
+    $all = $db->$db_getOne($sql);
+    if (PEAR::isError($all)) {
         throw new InvalidArgumentException($all->getMessage());
     }
     return $all;
