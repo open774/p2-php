@@ -1,0 +1,8 @@
+title: rep2ex all-in-one
+description: ServerSide 2ch viewer
+google_analytics: 
+show_downloads: true
+theme: jekyll-theme-slate
+
+gems:
+  - jekyll-mentions
