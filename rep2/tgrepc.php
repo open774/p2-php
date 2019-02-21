@@ -367,8 +367,10 @@ function tgrep_search($query)
         }
         return $result;
     } else {
-        require_once './dig2ch.php';
-        return dig2chsearch($query); // ’Ç‰Á
+//        require_once './dig2ch.php';
+//        return dig2chsearch($query); // ’Ç‰Á
+        require_once './refind2ch.php';
+        return refind2ch_search($query); // ’Ç‰Á
     }
 }
 
