@@ -189,6 +189,11 @@ if ($do_filtering) {
 EOS;
 }
 
+// ip2host
+if ($_conf['ip2host.enabled']) {
+    include P2EX_LIB_DIR . '/ip2host.inc.php';
+}
+
 echo '</body></html>';
 
 /*

@@ -230,7 +230,7 @@ class StrCtl
         //$kigou['han'] = array('`',  '\(', '\)', '\?', '#',  '%',  '@',  '&gt;', '\!', '\*', '\+', '&amp;');
 
         if ($no_escape) {
-            $kigou['han'] = array_map(create_function('$str', 'return ltrim($str, "\\\\");'), $kigou['han']);
+            $kigou['han'] = array_map(function($str){return ltrim($str, "\\\\");}, $kigou['han']);
             /*
             foreach ($kigou['han'] as $k => $v) {
                 $kigou['han'][$k] = ltrim($v, '\\');

@@ -4,6 +4,26 @@
  * conf/conf.inc.php ‚Ì p2_init() ‚©‚ç“Ç‚Ýž‚Ü‚ê‚éB
  */
 
+/**
+ * PHP 8‚Å”pŽ~‚³‚ê‚½ŠÖ”‚ðŒÄ‚Ño‚·”y‚Ì‚½‚ß‚Ìƒpƒbƒ`
+ * HTTP_Request2
+ * Bug #23839 get_magic_quotes_runtime() is deprecated
+ * https://pear.php.net/bugs/bug.php?id=23839
+ **/
+if (version_compare(PHP_VERSION, '8') > 0) {
+    function set_magic_quotes_runtime($new_setting) {
+        throw new Exception('‚Æ‚¤‚ÌÌ‚É”pŽ~‚³‚ê‚Ü‚µ‚½‚æ');
+    }
+
+    function get_magic_quotes_runtime() {
+        return false;
+    }
+
+    function get_magic_quotes_gpc() {
+        return false;
+    }
+}
+
 p2_rewrite_vars_for_proxy();
 
 // {{{ ƒ†[ƒU[Ý’è “Çž
@@ -156,7 +176,7 @@ $_conf['extra_headers_ht'] = '';
 $_conf['use_cookies'] = true;
 
 $userAgent = isset($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : null;
-$mobile = Net_UserAgent_Mobile::singleton($userAgent);
+$mobile = (new Net_UserAgent_Mobile)->singleton($userAgent);
 
 // iPhone, iPod Touch or Android
 if (UA::isIPhoneGroup($userAgent)) {

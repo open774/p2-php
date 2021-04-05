@@ -456,11 +456,13 @@ EOP;
 
         // +live 実況ボタンの処理
         // +live 実況中ic2のサムネイル作成をonoff
+        $live_ic2_off = '';
         if ($_conf['expack.ic2.enabled']
         && (!$_conf['live.ic2_onoff'])) {
             $live_ic2_off = "onclick=\"javascript:parent.menu.ic2_menu_switch(0);\"";
         }
         // +live スレのリンク先を実況に書き換える
+        $thre_addtag = '';
         if($_conf['live.livebbs_forcelive']==1&&$livebbs_bool) {
             $thre_addtag = $live_ic2_off."target=\"_blank\"";
             $thre_url = $live_url;

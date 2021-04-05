@@ -402,7 +402,7 @@ function recRecent($data)
             $lar = explode('<>', $l);
             $data_ar = explode('<>', $data);
             if (!$lar[1] || !strlen($lar[11])) { continue; } // 不正データを削除
-            if ($lar[1] == $data_ar[1] && $lar[11] == $data_ar[11]) { continue; } // key, bbsで重複回避
+            if ($lar[1] == $data_ar[1] && $lar[11] == $data_ar[11] && $lar[10] == $data_ar[10]) { continue; } // key, bbsで重複回避
             $neolines[] = $l;
         }
     }

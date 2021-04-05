@@ -128,30 +128,23 @@ class ThreadList
 
         //$GLOBALS['debug'] && $GLOBALS['profiler']->enterSection('readList()');
 
+        $lines = array();
+
         switch ($this->spmode) {
 
         // ローカルの履歴ファイル 読み込み
         case 'recent':
-            if ($lines = FileCtl::file_read_lines($_conf['recent_idx'])) {
-                //P2Util::pushInfoHtml('<p>履歴は空っぽです</p>');
-                //return false;
-            }
+            $lines = FileCtl::file_read_lines($_conf['recent_idx']);
             break;
 
         // ローカルの書き込み履歴ファイル 読み込み
         case 'res_hist':
-            if ($lines = FileCtl::file_read_lines($_conf['res_hist_idx'])) {
-                //P2Util::pushInfoHtml('<p>書き込み履歴は空っぽです</p>');
-                //return false;
-            }
+            $lines = FileCtl::file_read_lines($_conf['res_hist_idx']);
             break;
 
         //ローカルのお気にファイル 読み込み
         case 'fav':
-            if ($lines = FileCtl::file_read_lines($_conf['favlist_idx'])) {
-                //P2Util::pushInfoHtml('<p>お気にスレは空っぽです</p>');
-                //return false;
-            }
+            $lines = FileCtl::file_read_lines($_conf['favlist_idx']);
             break;
 
         // お気に板をまとめて読み込み
@@ -181,7 +174,6 @@ class ThreadList
                 }
             }
 
-            $lines = array();
             $i = 0;
 
             foreach ($favitas as $ita) {
@@ -296,6 +288,8 @@ class ThreadList
 
                         $threads[$matches[2]]['key']    = $matches[1];      // スレッドID
                         $threads[$matches[2]]['title']  = $matches[3];      // title
+                        // サロゲートペアの数値文字参照を変換
+                        $threads[$matches[2]]['title']  = P2Util::replaceNumericalSurrogatePair($threads[$matches[2]]['title']);
                         $threads[$matches[2]]['rc']     = $matches[4];      // rescount
 
                         $threads[$matches[2]]['param']  = implode('<>',array_fill(0, 5, '')); // lastmodify.txt に含まれないスレを表示できるように
@@ -323,7 +317,7 @@ class ThreadList
 
         //$GLOBALS['debug'] && $GLOBALS['profiler']->leaveSection('readList()');
 
-        return $lines;
+        return is_array($lines) ? $lines : array();
     }
 
     // }}}

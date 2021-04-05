@@ -98,7 +98,7 @@ function setFav($host, $bbs, $key, $setfav, $ttitle = null, $setnum = null)
             $i++;
             $lar = explode('<>', $l);
             // 重複回避
-            if ($lar[1] == $key && $lar[11] == $bbs) {
+            if ($lar[1] == $key && $lar[11] == $bbs && $lar[10] == $host) { 
                 $before_line_num = $i; // 移動前の行番号をセット
                 $was_set = true;
                 continue;

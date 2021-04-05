@@ -102,7 +102,7 @@ JavaScript‚É‚µ‚Ä‚µ‚Ü‚Á‚½•û‚ª‚¢‚¢‚©‚àH
 javascript:(function(){for (var j=0;j<document.forms.length;j++){for (var i=0;i<document.forms[j].elements.length;i++) {k=document.forms[j].elements[i];if(k.type=="textarea"){k.rows=10;k.cols=34;}}}})(); 
 */
 $kyopon_size = '';
-$mobile = Net_UserAgent_Mobile::singleton();
+$mobile = (new Net_UserAgent_Mobile)->singleton();
 if ($mobile->isAirHPhone()) {
     $kyopon_size = ' rows="10" cols="34"';
 }

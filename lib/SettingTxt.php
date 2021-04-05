@@ -109,8 +109,8 @@ class SettingTxt
             $code = $response->getStatus();
             if ($code == 302) {
                 // ƒzƒXƒg‚ÌˆÚ“]‚ð’ÇÕ
-                $new_host = P2HostMgr::getCurrentHost($this->host, $this->bbs);
-                if ($new_host != $this->host) {
+                $new_host = P2HostMgr::getCurrentHost($this->_host, $this->_bbs);
+                if ($new_host != $this->_host) {
                     $aNewSettingTxt = new SettingTxt($new_host, $this->_bbs);
                     return $aNewSettingTxt->downloadSettingTxt();
                 }
@@ -118,7 +118,7 @@ class SettingTxt
                 //var_dump($req->getResponseHeader());
                 $body = $response->getBody();
                 // ‚µ‚½‚ç‚Î or be.2ch.net ‚È‚çEUC‚ðSJIS‚É•ÏŠ·
-                if (P2HostMgr::isHostJbbsShitaraba($this->host) || P2HostMgr::isHostBe2chs($this->host)) {
+                if (P2HostMgr::isHostJbbsShitaraba($this->_host) || P2HostMgr::isHostBe2chs($this->_host)) {
                     $body = mb_convert_encoding($body, 'CP932', 'CP51932');
                 }
                 if (FileCtl::file_write_contents($this->_setting_txt, $body) === false) {

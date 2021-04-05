@@ -9,7 +9,7 @@ function dig2chsearch($query)
     //$query_q = preg_replace('/(\s+)/' , '\+' ,$query_arry['q']);
     $query_arry['q'] = urlencode($query_arry['q']);
 
-    $url = $_conf['test.dig2ch_url'] . '?AndOr=' . $query_arry['AndOr'] . '&maxResult=' . $query_arry['maxResult'] . '&atLeast=1&Sort=' . $query_arry['Sort'] . '&Link=1&Bbs=all&924=' . $query_arry['924'] . '&json=1&keywords=' . $query_arry['q'];
+    $url = 'https://dig.5ch.net/' . '?AndOr=' . $query_arry['AndOr'] . '&maxResult=' . $query_arry['maxResult'] . '&atLeast=1&Sort=' . $query_arry['Sort'] . '&Link=1&Bbs=all&924=' . $query_arry['924'] . '&json=1&keywords=' . $query_arry['q'];
 
     try {
         $req = P2Commun::createHTTPRequest ($url, HTTP_Request2::METHOD_GET);

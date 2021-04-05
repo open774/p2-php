@@ -29,14 +29,8 @@ if ($ini['Viewer']['cache'] && file_exists($_conf['iv2_cache_db_path'])) {
     $viewer_cache_exists = false;
 }
 
-// データベースに接続
-$db = DB::connect($ini['General']['dsn']);
-if (DB::isError($db)) {
-    p2die($db->getMessage());
-}
-
 // テンプレートエンジン初期化
-$_flexy_options = &PEAR5::getStaticProperty('HTML_Template_Flexy', 'options');
+$_flexy_options = &PEAR::getStaticProperty('HTML_Template_Flexy', 'options');
 $_flexy_options = array(
     'locale' => 'ja',
     'charset' => 'Shift_JIS',
@@ -50,6 +44,9 @@ $flexy = new HTML_Template_Flexy;
 // }}}
 // {{{ データベース操作・ファイル削除
 
+$icdc = new ImageCache2_DataObject_Common();
+$db = $icdc->PDO();
+
 if (isset($_POST['action'])) {
     switch ($_POST['action']) {
 
@@ -58,7 +55,7 @@ if (isset($_POST['action'])) {
         case 'dropAborn':
             if ($_POST['action'] == 'dropZero') {
                 // ランク=0 の画像を削除する
-                $where = $db->quoteIdentifier('rank') . ' = 0';
+                $where = $icdc->quoteIdentifier('rank') . ' = 0';
                 if (isset($_POST['dropZeroLimit'])) {
                     // 取得した期間を限定
                     switch ($_POST['dropZeroSelectTime']) {
@@ -72,7 +69,7 @@ if (isset($_POST['action'])) {
                     if ($expires !== null) {
                         $operator = ($_POST['dropZeroSelectType'] == 'within') ? '>' : '<';
                         $where .= sprintf(' AND %s %s %d',
-                            $db->quoteIdentifier('time'),
+                            $icdc->quoteIdentifier('time'),
                             $operator,
                             time() - $expires);
                     }
@@ -81,22 +78,22 @@ if (isset($_POST['action'])) {
                 $to_blacklist = !empty($_POST['dropZeroToBlackList']);
             } else {
                 // あぼーん画像を削除し、ブラックリストに登録する
-                $where = $db->quoteIdentifier('rank') . ' < 0';
+                $where = $icdc->quoteIdentifier('rank') . ' < 0';
                 $to_blacklist = true;
             }
 
-            $sql = sprintf('SELECT %s FROM %s WHERE %s;',
-                $db->quoteIdentifier('id'),
-                $db->quoteIdentifier($ini['General']['table']),
+            $sql = sprintf('SELECT %s FROM %s WHERE %s',
+                $icdc->quoteIdentifier('id'),
+                $icdc->quoteIdentifier($ini['General']['table']),
                 $where);
-            $result = $db->getAll($sql, null, DB_FETCHMODE_ORDERED | DB_FETCHMODE_FLIPPED);
-            if (DB::isError($result)) {
-                P2Util::pushInfoHtml($result->getMessage());
-                break;
+            try {
+                $result = $db->query($sql)->fetchAll(PDO::FETCH_COLUMN);
+            } catch (PDOException $e) {
+                P2Util::pushInfoHtml($e->getMessage());
             }
+
             if ($result) {
-                $target = $result[0];
-                $removed_files = ImageCache2_DatabaseManager::remove($target, $to_blacklist);
+                $removed_files = ImageCache2_DatabaseManager::remove($result, $to_blacklist);
             } else {
                 $removed_files = array();
             }
@@ -147,33 +144,33 @@ if (isset($_POST['action'])) {
 
         // エラーログを消去する
         case 'clearErrorLog':
-            $result = $db->query('DELETE FROM ' . $db->quoteIdentifier($ini['General']['error_table']));
-            if (DB::isError($result)) {
-                P2Util::pushInfoHtml($result->getMessage());
-            } else {
+            try {
+                $result = $db->query('DELETE FROM ' . $icdc->quoteIdentifier($ini['General']['error_table']));
                 P2Util::pushInfoHtml('<p>エラーログを消去しました。</p>');
+            } catch (PDOException $e) {
+                P2Util::pushInfoHtml($e->getMessage());
             }
             break;
 
         // ブラックリストを消去する
         case 'clearBlackList':
-            $result = $db->query('DELETE FROM ' . $db->quoteIdentifier($ini['General']['blacklist_table']));
-            if (DB::isError($result)) {
-                P2Util::pushInfoHtml($result->getMessage());
-            } else {
+            try {
+                $result = $db->query('DELETE FROM ' . $icdc->quoteIdentifier($ini['General']['blacklist_table']));
                 P2Util::pushInfoHtml('<p>ブラックリストを消去しました。</p>');
+            } catch (PDOException $e) {
+                P2Util::pushInfoHtml($e->getMessage());
             }
             break;
 
         // データベースを最適化する
         case 'optimizeDB':
             // SQLite2 の画像キャッシュデータベースをVACUUM
-            if ($db->dsn['phptype'] == 'sqlite') {
-                $result = $db->query('VACUUM');
-                if (DB::isError($result)) {
-                    P2Util::pushInfoHtml($result->getMessage());
-                } else {
+            if ($icdc->db_class === 'sqlite') {
+                try {
+                    $result = $db->query('VACUUM');
                     P2Util::pushInfoHtml('<p>画像データベースを最適化しました。</p>');
+                } catch (PDOException $e) {
+                    P2Util::pushInfoHtml($e->getMessage());
                 }
             }
 
@@ -209,7 +206,7 @@ $flexy->setData('iphone', $_conf['iphone']);
 $flexy->setData('doctype', $_conf['doctype']);
 $flexy->setData('extra_headers',   $_conf['extra_headers_ht']);
 $flexy->setData('extra_headers_x', $_conf['extra_headers_xht']);
-if ($db->dsn['phptype'] == 'sqlite' || $viewer_cache_exists) {
+if ($icdc->db_class === 'sqlite' || $viewer_cache_exists) {
     $flexy->setData('enable_optimize_db', true);
 } else {
     $flexy->setData('enable_optimize_db', false);

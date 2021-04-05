@@ -2,20 +2,19 @@
 
 namespace ImageCache2\Console\Command;
 
+use ImageCache2_DataObject_Common;
+use PDOException;
 use Symfony\Component\Console\Command\Command as sfConsoleCommand;
-use Symfony\Component\Console\Input\InputArgument,
-    Symfony\Component\Console\Input\InputOption,
-    Symfony\Component\Console\Input\InputInterface,
-    Symfony\Component\Console\Output\OutputInterface,
-    Symfony\Component\Console\Formatter\OutputFormatterStyle;
-use PEAR;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
+use Symfony\Component\Console\Output\OutputInterface;
 
 require_once P2EX_LIB_DIR . '/ImageCache2/bootstrap.php';
 
 class Setup extends sfConsoleCommand
 {
-    const PG_TRGM_GIST  = 'gist';
-    const PG_TRGM_GIN   = 'gin';
+    const PG_TRGM_GIST = 'gist';
+    const PG_TRGM_GIN = 'gin';
 
     // {{{ properties
 
@@ -35,7 +34,7 @@ class Setup extends sfConsoleCommand
     private $pgTrgm;
 
     /**
-     * @var DB_common
+     * @var ImageCache2_DataObject_Common
      */
     private $db;
 
@@ -47,7 +46,7 @@ class Setup extends sfConsoleCommand
     /**
      * @var string
      */
-    private $serialPriamryKey;
+    private $serialPrimaryKey;
 
     /**
      * @var string
@@ -55,7 +54,7 @@ class Setup extends sfConsoleCommand
     private $tableExtraDefs;
 
     /**
-     * @var int
+     * @var string
      */
     private $findTableStatement;
 
@@ -73,12 +72,12 @@ class Setup extends sfConsoleCommand
     protected function configure()
     {
         $this
-        ->setName('setup')
-        ->setDescription('Setups ImageCache2 environment')
-        ->setDefinition(array(
-            new InputOption('check-only', null, InputOption::VALUE_NONE, 'Don\'t execute anything'),
-            new InputOption('pg-trgm', null, InputOption::VALUE_REQUIRED, 'Enable gist or gin 3-gram index'),
-        ));
+            ->setName('setup')
+            ->setDescription('Setups ImageCache2 environment')
+            ->setDefinition(array(
+                new InputOption('check-only', null, InputOption::VALUE_NONE, 'Don\'t execute anything'),
+                new InputOption('pg-trgm', null, InputOption::VALUE_REQUIRED, 'Enable gist or gin 3-gram index'),
+            ));
     }
 
     /**
@@ -96,12 +95,14 @@ class Setup extends sfConsoleCommand
             $result = $this->connect();
             if ($result) {
                 $this->info('Database: OK');
-                $this->serialPriamryKey = $result[0];
+                $this->serialPrimaryKey = $result[0];
                 $this->tableExtraDefs = $result[1];
                 $this->createTables();
                 $this->createIndexes();
             }
         }
+
+        return 0;
     }
 
     /**
@@ -158,6 +159,27 @@ class Setup extends sfConsoleCommand
         return $result;
     }
 
+    private function comment($message)
+    {
+        $this->output->writeln("<comment>{$message}</comment>");
+    }
+
+    // {{{ post connect methods
+
+    private function error($message)
+    {
+        if ($this->dryRun) {
+            $this->output->writeln("<error>{$message}</error>");
+        } else {
+            throw new \Exception($message);
+        }
+    }
+
+    private function info($message)
+    {
+        $this->output->writeln("<info>{$message}</info>");
+    }
+
     /**
      * @return array
      */
@@ -171,28 +193,20 @@ class Setup extends sfConsoleCommand
             $phptype = strtolower($matches[1]);
         }
 
-        if (!in_array($phptype, array('mysql', 'mysqli', 'pgsql', 'sqlite'))) {
-            $this->error('Supports only MySQL, PostgreSQL and SQLite2.');
+        if (!in_array($phptype, array('mysql', 'pgsql', 'sqlite'))) {
+            $this->error('Supports only MySQL, PostgreSQL and SQLite.');
             return null;
         }
 
-        if (!extension_loaded($phptype)) {
+        if (!extension_loaded('pdo_' . $phptype)) {
             $this->error("Extension '{$phptype}' is not loaded.");
             return null;
         }
 
-        $db = \DB::connect($dsn);
-        if (PEAR::isError($db)) {
-            $this->error($db->getMessage());
-            return null;
-        }
-
-        $this->db = $db;
+        $this->db = new ImageCache2_DataObject_Common();
 
         return $this->postConnect($phptype);
     }
-
-    // {{{ post connect methods
 
     private function postConnect($phptype)
     {
@@ -200,10 +214,7 @@ class Setup extends sfConsoleCommand
 
         switch ($phptype) {
             case 'mysql':
-                $result = $this->postConnectMysql(false);
-                break;
-            case 'mysqli':
-                $result = $this->postConnectMysql(true);
+                $result = $this->postConnectMysql();
                 break;
             case 'pgsql':
                 $result = $this->postConnectPgsql();
@@ -216,14 +227,16 @@ class Setup extends sfConsoleCommand
         return $result;
     }
 
-    private function postConnectMysql($mysqli)
+    // }}}
+    // {{{ methods to create table
+
+    private function postConnectMysql()
     {
-        $serialPriamryKey = 'INTEGER PRIMARY KEY AUTO_INCREMENT';
+        $serialPrimaryKey = 'INTEGER PRIMARY KEY AUTO_INCREMENT';
         $tableExtraDefs = ' TYPE=MyISAM';
 
-        $db = $this->db;
-        $result = $db->getRow("SHOW VARIABLES LIKE 'version'",
-                              array(), DB_FETCHMODE_ORDERED);
+        $db = $this->db->PDO();
+        $result = $db->query("SHOW VARIABLES LIKE 'version'")->fetch();
         if (is_array($result)) {
             $version = $result[1];
             if (version_compare($version, '4.1.2', 'ge')) {
@@ -231,72 +244,33 @@ class Setup extends sfConsoleCommand
             }
         }
 
-        if (!$this->dryRun) {
-            if ($mysqli && function_exists('mysqli_set_charset')) {
-                mysqli_set_charset($db->connection, 'utf8');
-            } elseif (!$mysqli && function_exists('mysql_set_charset')) {
-                mysql_set_charset('utf8', $db->connection);
-            } else {
-                $db->query('SET NAMES utf8');
-            }
-        }
+        $this->findTableStatement = "SHOW TABLES LIKE ?";
+        $this->findIndexFormat = "SHOW INDEX FROM %s WHERE Key_name LIKE ?";
 
-        $stmt = $db->prepare('SHOW TABLES LIKE ?');
-        if (PEAR::isError($stmt)) {
-            $this->error($stmt->getMessage());
-            return null;
-        }
-        $this->findTableStatement = $stmt;
-        $this->findIndexFormat = 'SHOW INDEX FROM %s WHERE Key_name LIKE ?';
-
-        return array($serialPriamryKey, $tableExtraDefs);
+        return array($serialPrimaryKey, $tableExtraDefs);
     }
 
     private function postConnectPgsql()
     {
-        $serialPriamryKey = 'SERIAL PRIMARY KEY';
+        $serialPrimaryKey = 'SERIAL PRIMARY KEY';
         $tableExtraDefs = '';
 
-        $db = $this->db;
-
-        if (!$this->dryRun) {
-            if (function_exists('pg_set_client_encoding')) {
-                pg_set_client_encoding($db->connection, 'UNICODE');
-            } else {
-                $db->query("SET CLIENT_ENCODING TO 'UNICODE'");
-            }
-        }
-
-        $stmt = $db->prepare("SELECT relname FROM pg_class WHERE relkind = 'r' AND relname = ?");
-        if (PEAR::isError($stmt)) {
-            $this->error($stmt->getMessage());
-            return null;
-        }
-        $this->findTableStatement = $stmt;
+        $this->findTableStatement = "SELECT relname FROM pg_class WHERE relkind = 'r' AND relname = ?";
         $this->findIndexFormat = "SELECT relname FROM pg_class WHERE relkind = 'i' AND relname = ?";
 
-        return array($serialPriamryKey, $tableExtraDefs);
+        return array($serialPrimaryKey, $tableExtraDefs);
     }
 
     private function postConnectSqlite()
     {
-        $serialPriamryKey = 'INTEGER PRIMARY KEY';
+        $serialPrimaryKey = 'INTEGER PRIMARY KEY';
         $tableExtraDefs = '';
 
-        $db = $this->db;
-
-        $stmt = $db->prepare("SELECT name FROM sqlite_master WHERE type = 'table' AND name= ?");
-        if (PEAR::isError($stmt)) {
-            $this->error($stmt->getMessage());
-            return null;
-        }
+        $this->findTableStatement = "SELECT name FROM sqlite_master WHERE type = 'table' AND name= ?";
         $this->findIndexFormat = "SELECT name FROM sqlite_master WHERE type = 'index' AND name= ?";
 
-        return array($serialPriamryKey, $tableExtraDefs);
+        return array($serialPrimaryKey, $tableExtraDefs);
     }
-
-    // }}}
-    // {{{ methods to create table
 
     private function createTables()
     {
@@ -325,13 +299,44 @@ class Setup extends sfConsoleCommand
 
     private function findTable($tableName)
     {
-        $result = $this->db->execute($this->findTableStatement, array($tableName));
-        if (PEAR::isError($result)) {
-            $this->error($result->getMessage());
+        $db = $this->db->PDO();
+        try {
+            $stmt = $db->prepare($this->findTableStatement);
+            $stmt->execute([$tableName]);
+            return count($stmt->fetchAll()) > 0;
+        } catch (PDOException $e) {
+            $this->error($e->getMessage());
             return false;
         }
-        return $result->numRows() > 0;
     }
+
+    private function createImagesTable($tableName)
+    {
+        $quotedTableName = $this->db->quoteIdentifier($tableName);
+        $sql = <<<SQL
+CREATE TABLE {$quotedTableName} (
+    "id"     {$this->serialPrimaryKey},
+    "uri"    VARCHAR (255),
+    "host"   VARCHAR (255),
+    "name"   VARCHAR (255),
+    "size"   INTEGER NOT NULL,
+    "md5"    CHAR (32) NOT NULL,
+    "width"  SMALLINT NOT NULL,
+    "height" SMALLINT NOT NULL,
+    "mime"   VARCHAR (50) NOT NULL,
+    "time"   INTEGER NOT NULL,
+    "rank"   SMALLINT NOT NULL DEFAULT 0,
+    "memo"   TEXT
+){$this->tableExtraDefs};
+SQL;
+        if ($this->db->db_class === 'mysql') { // MySQL 8.0.2‚©‚çRANK‚Í—\–ñŒê https://dev.mysql.com/doc/refman/8.0/en/keywords.html
+            $sql = str_replace('"', '`', $sql);
+        }
+        return $this->doCreateTable($tableName, $sql);
+    }
+
+    // }}}
+    // {{{ methods to create index
 
     private function doCreateTable($tableName, $sql)
     {
@@ -340,36 +345,15 @@ class Setup extends sfConsoleCommand
             return true;
         }
 
-        $result = $this->db->query($sql);
-        if (PEAR::isError($result)) {
-            $this->error($result->getMessage());
+        try {
+            $this->db->PDO()->query($sql);
+        } catch (PDOException $e) {
+            $this->error($e->getMessage());
             return false;
         }
 
         $this->info("Table '{$tableName}' created");
         return true;
-    }
-
-    private function createImagesTable($tableName)
-    {
-        $quotedTableName = $this->db->quoteIdentifier($tableName);
-        $sql = <<<SQL
-CREATE TABLE {$quotedTableName} (
-    id     {$this->serialPriamryKey},
-    uri    VARCHAR (255),
-    host   VARCHAR (255),
-    name   VARCHAR (255),
-    size   INTEGER NOT NULL,
-    md5    CHAR (32) NOT NULL,
-    width  SMALLINT NOT NULL,
-    height SMALLINT NOT NULL,
-    mime   VARCHAR (50) NOT NULL,
-    time   INTEGER NOT NULL,
-    rank   SMALLINT NOT NULL DEFAULT 0,
-    memo   TEXT
-){$this->tableExtraDefs};
-SQL;
-        return $this->doCreateTable($tableName, $sql);
     }
 
     private function createErrorLogTable($tableName)
@@ -391,7 +375,7 @@ SQL;
         $quotedTableName = $this->db->quoteIdentifier($tableName);
         $sql = <<<SQL
 CREATE TABLE {$quotedTableName} (
-    id     {$this->serialPriamryKey},
+    id     {$this->serialPrimaryKey},
     uri    VARCHAR (255),
     size   INTEGER NOT NULL,
     md5    CHAR (32) NOT NULL,
@@ -400,9 +384,6 @@ CREATE TABLE {$quotedTableName} (
 SQL;
         return $this->doCreateTable($tableName, $sql);
     }
-
-    // }}}
-    // {{{ methods to create index
 
     private function createIndexes()
     {
@@ -436,7 +417,7 @@ SQL;
             }
         }
 
-        if (strcasecmp(get_class($this->db), 'db_pgsql') === 0) {
+        if ($this->db->db_class === 'pgsql') {
             $pgTrgm = $this->pgTrgm;
             if ($pgTrgm === self::PG_TRGM_GIST ||
                 $pgTrgm === self::PG_TRGM_GIN) {
@@ -445,9 +426,26 @@ SQL;
                     $this->info("Index '{$indexName}' already exists");
                 } else {
                     $this->doCreatePgTrgmIndex($pgTrgm, $indexName,
-                                               $imagesTable, 'memo');
+                        $imagesTable, 'memo');
                 }
             }
+        }
+    }
+
+    // }}}
+    // {{{ console output methods
+
+    private function findIndex($indexName, $tableName)
+    {
+        $db = $this->db->PDO();
+        $sql = sprintf($this->findIndexFormat, $this->db->quoteIdentifier($tableName));
+        try {
+            $stmt = $db->prepare($sql);
+            $stmt->execute([$indexName]);
+            return count($stmt->fetchAll()) > 0;
+        } catch (PDOException $e) {
+            $this->error($e->getMessage());
+            return false;
         }
     }
 
@@ -456,18 +454,19 @@ SQL;
         $db = $this->db;
         $callback = array($db, 'quoteIdentifier');
         $sql = sprintf('CREATE INDEX %s ON %s (%s);',
-                       $db->quoteIdentifier($indexName),
-                       $db->quoteIdentifier($tableName),
-                       implode(', ', array_map($callback, $fieldNames)));
+            $db->quoteIdentifier($indexName),
+            $db->quoteIdentifier($tableName),
+            implode(', ', array_map($callback, $fieldNames)));
 
         if ($this->dryRun) {
             $this->comment($sql);
             return true;
         }
 
-        $result = $db->query($sql);
-        if (PEAR::isError($result)) {
-            $this->error($result->getMessage());
+        try {
+            $this->db->PDO()->query($sql);
+        } catch (PDOException $e) {
+            $this->error($e->getMessage());
             return false;
         }
 
@@ -480,60 +479,26 @@ SQL;
     {
         $db = $this->db;
         $sql = sprintf('CREATE INDEX %2$s ON %3$s USING %1$s (%4$s %1$s_trgm_ops);',
-                       $indexType,
-                       $db->quoteIdentifier($indexName),
-                       $db->quoteIdentifier($tableName),
-                       $db->quoteIdentifier($fieldName));
+            $indexType,
+            $db->quoteIdentifier($indexName),
+            $db->quoteIdentifier($tableName),
+            $db->quoteIdentifier($fieldName));
 
         if ($this->dryRun) {
             $this->comment($sql);
             return true;
         }
 
-        $result = $db->query($sql);
-        if (PEAR::isError($result)) {
-            $this->error($result->getMessage());
+        try {
+            $this->db->PDO()->query($sql);
+        } catch (PDOException $e) {
+            $this->error($e->getMessage());
             return false;
         }
 
         $this->info("{$indexType} Index '{$indexName}' created");
 
         return true;
-    }
-
-    private function findIndex($indexName, $tableName)
-    {
-        $db = $this->db;
-        $sql = sprintf($this->findIndexFormat,
-                       $db->quoteIdentifier($tableName));
-        $result = $db->query($sql, array($indexName));
-        if (PEAR::isError($result)) {
-            $this->error($result->getMessage());
-            return false;
-        }
-        return $result->numRows() > 0;
-    }
-
-    // }}}
-    // {{{ console output methods
-
-    private function info($message)
-    {
-        $this->output->writeln("<info>{$message}</info>");
-    }
-
-    private function comment($message)
-    {
-        $this->output->writeln("<comment>{$message}</comment>");
-    }
-
-    private function error($message)
-    {
-        if ($this->dryRun) {
-            $this->output->writeln("<error>{$message}</error>");
-        } else {
-            throw new \Exception($message);
-        }
     }
 
     // }}}

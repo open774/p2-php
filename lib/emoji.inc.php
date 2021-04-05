@@ -43,7 +43,7 @@ function p2_get_emoji(Net_UserAgent_Mobile_Common $mobile = null)
     );
 
     if (!$mobile) {
-        $mobile = Net_UserAgent_Mobile::singleton();
+        $mobile = (new Net_UserAgent_Mobile)->singleton();
         $cache = true;
     }
 

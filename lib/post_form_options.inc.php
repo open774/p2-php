@@ -17,6 +17,7 @@ $hd['MESSAGE'] = '';
 $hd['subject'] = '';
 $hd['beres_checked'] = '';
 $hd['p2res_checked'] = '';
+$hd['proxy_checked'] = '';
 
 $htm['beres'] = '';
 $htm['p2res'] = '';
@@ -28,6 +29,7 @@ $htm['options'] = '';
 $htm['options_k'] = '';
 $htm['subject'] = '';
 $htm['resform_ttitle'] = '';
+$htm['proxy'] = '';
 
 $htm['disable_js'] = <<<EOP
 <script type="text/javascript">
@@ -110,6 +112,11 @@ if ($post_config = PostDataStore::get($post_config_key)) {
     }
 }
 
+// proxy
+if ($_conf['proxy_use']) {
+    $hd['proxy_checked'] = ' checked';
+}
+
 // }}}
 // {{{ 名前とメールの最終調整
 
@@ -133,7 +140,7 @@ if ($hd['mail'] === '') {
 // {{{ textareaの属性
 
 // 参考 クラシック COLS='60' ROWS='8'
-$mobile = Net_UserAgent_Mobile::singleton();
+$mobile = (new Net_UserAgent_Mobile)->singleton();
 $wrap_at = ''; // wrap属性はW3C HTML 4.01仕様に存在しない
 $name_size_at = '';
 $mail_size_at = '';
@@ -177,6 +184,15 @@ if (P2HostMgr::isHost2chs($host) and file_exists($_conf['sid2ch_php'])) {
 if (P2HostMgr::isHost2chs($host) and P2Util::isEnableBe2ch()) {
     $htm['beres'] = '<input type="checkbox" id="beres" name="beres" value="1"'. $hd['beres_checked'] . '>'
                   . '<label for="beres">Beで書き込む</label>';
+}
+
+// }}}
+// {{{ Proxy チェックボックス
+
+//  Proxy
+if ($_conf['proxy_host']) {
+    $htm['proxy'] = '<input type="checkbox" id="proxy" name="proxy" value="1"'. $hd['proxy_checked'] . '>'
+                  . '<label for="proxy">プロキシを利用('.$_conf['proxy_host'].':'.$_conf['proxy_port'].')</label>';
 }
 
 // }}}

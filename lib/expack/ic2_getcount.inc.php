@@ -15,8 +15,7 @@ function getIC2ImageCount($key, $threshold = null) {
         $icdb->whereAddQuoted('rank', '>=', $threshold);
     }
 
-    $db = $icdb->getDatabaseConnection();
-    $db_class = strtolower(get_class($db));
+    $db_class = $icdb->db_class;
     $keys = explode(' ', $icdb->uniform($key, 'CP932'));
     foreach ($keys as $k) {
         $operator = 'LIKE';
@@ -29,7 +28,7 @@ function getIC2ImageCount($key, $threshold = null) {
         if (strpos($k, '%') !== false || strpos($k, '_') !== false) {
             // SQLite2はLIKE演算子の右辺でバックスラッシュによるエスケープや
             // ESCAPEでエスケープ文字を指定することができないのでGLOB演算子を使う
-            if ($db_class == 'db_sqlite') {
+            if ($db_class == 'sqlite') {
                 if (strpos($k, '*') !== false || strpos($k, '?') !== false) {
                     throw new InvalidArgumentException('「%または_」と「*または?」が混在するキーワードは使えません。');
                 } else {
@@ -47,10 +46,10 @@ function getIC2ImageCount($key, $threshold = null) {
         $icdb->whereAddQuoted('memo', $operator, $expr);
     }
 
-    $sql = sprintf('SELECT COUNT(*) FROM %s %s', $db->quoteIdentifier($ini['General']['table']), $icdb->_query['condition']);
-    $all = $db->getOne($sql);
-    if (DB::isError($all)) {
-        throw new InvalidArgumentException($all->getMessage());
+    try {
+        $all = $icdb->count('*');
+    } catch (PDOException $e) {
+        p2die($e->getMessage());
     }
     return $all;
 }

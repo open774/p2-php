@@ -50,6 +50,8 @@ function p2_fontconfig_apply_custom()
     global $STYLE, $_conf, $skin_en, $skin_uniq;
 
     if ($_conf['expack.skin.enabled']) {
+        $current_fontconfig = null;
+
         if (isset($_conf['expack.am.fontfamily'])) {
             $_conf['expack.am.fontfamily.orig'] = $_conf['expack.am.fontfamily'];
         } else {

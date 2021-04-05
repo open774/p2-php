@@ -202,6 +202,8 @@ class Thread
             $this->_ttitle_hd = p2h($this->ttitle, false);
             // <mark>[隔離病棟]</mark>などをデコード
             $this->_ttitle_hd = str_replace('&lt;/mark&gt;', '</mark>', str_replace('&lt;mark&gt;', '<mark>', $this->_ttitle_hd));
+            // サロゲートペアの数値文字参照を変換
+            $this->_ttitle_hd = P2Util::replaceNumericalSurrogatePair($this->_ttitle_hd);
         }
         return $this->_ttitle_hd;
     }

@@ -37,9 +37,9 @@ $conf_user_def['first_page'] = "first_cont.php"; // ("first_cont.php")
     必要なければ、無指定("")にする。
 */
 // ("http://azlucky.s25.xrea.com/2chboard/bbsmenu.html")    // 2ch + 外部BBS
-// ("http://menu.2ch.net/bbsmenu.html")                     // 2ch基本
+// ("https://menu.5ch.net/bbsmenu.html")                     // 2ch基本
 
-$conf_user_def['brdfile_online'] = "http://azlucky.s25.xrea.com/2chboard/bbsmenu.html";
+$conf_user_def['brdfile_online'] = "https://menu.5ch.net/bbsmenu.html";
 $conf_user_rules['brdfile_online'] = array('emptyToDef', 'invalidUrlToDef');
 
 // }}}
@@ -379,6 +379,10 @@ $conf_user_rules['ngaborn_daylimit'] = array('emptyToDef', 'notIntExceptMinusToD
 $conf_user_def['ngaborn_purge_aborn'] = 0;  // (0)
 $conf_user_rad['ngaborn_purge_aborn'] = array('1' => 'はい', '0' => 'いいえ');
 
+// >>1 をあぼーんの対象外にする(する:1, しない:0)
+$conf_user_def['ngaborn_exclude_one'] = 0; // (0)
+$conf_user_rad['ngaborn_exclude_one'] = array('1' => 'する', '0' => 'しない');
+
 // }}}
 // {{{ 2ch API
 
@@ -623,7 +627,12 @@ include P2_CONFIG_DIR . '/conf_user_def_wiki.inc.php';
 include P2_CONFIG_DIR . '/conf_user_def_live.inc.php';
 
 // }}}
+// {{{ ip2host
 
+include P2_CONFIG_DIR . '/conf_user_def_ip2host.inc.php';
+
+// }}}
+    
 /*
  * Local Variables:
  * mode: php

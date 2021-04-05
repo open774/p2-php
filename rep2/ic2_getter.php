@@ -136,7 +136,7 @@ $qfe['reset']    = $qf->addElement('reset', 'reset');
 $qfe['close']    = $qf->addElement('button', 'close', null, $_attr_close);
 
 // Flexy
-$_flexy_options = &PEAR5::getStaticProperty('HTML_Template_Flexy', 'options');
+$_flexy_options = &PEAR::getStaticProperty('HTML_Template_Flexy', 'options');
 $_flexy_options = array(
     'locale' => 'ja',
     'charset' => 'Shift_JIS',

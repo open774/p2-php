@@ -57,7 +57,7 @@ function printLoginFirst(Login $_login)
     //==============================================
     // •â•”FØ
     //==============================================
-    $mobile = Net_UserAgent_Mobile::singleton();
+    $mobile = (new Net_UserAgent_Mobile)->singleton();
 
     $keep_login_checked = ' checked';
     if (isset($_POST['submit_new']) || isset($_POST['submit_member'])) {

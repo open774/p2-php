@@ -24,7 +24,7 @@ class ImageCache2_Thumbnailer
     // }}}
     // {{{ properties
 
-    public $db;            // @var object  PEAR DB_{phptype}のインスタンス
+    public $db;            // @var object  PDO_DataObjectのインスタンス
     public $ini;           // @var array   ImageCache2の設定
     public $mode;          // @var int     サムネイルの種類
     public $cachedir;      // @var string  ImageCache2のキャッシュ保存ディレクトリ
@@ -105,13 +105,6 @@ class ImageCache2_Thumbnailer
 
         // 設定
         $this->ini = ic2_loadconfig();
-
-        // データベースに接続
-        $icdb = new ImageCache2_DataObject_Images();
-        $this->db = $icdb->getDatabaseConnection();
-        if (DB::isError($this->db)) {
-            $this->error($this->db->getMessage());
-        }
 
         // サムネイルモード判定
         $dpr = $mode & self::DPR_MASK;
@@ -583,7 +576,7 @@ class ImageCache2_Thumbnailer
         if ($size && $md5 && $mime) {
             $icdb = new ImageCache2_DataObject_Images();
             $icdb->whereAddQUoted('size', '=', $size);
-            $icdb->whereAddQuoted('md5',  '=', $md5);
+            $icdb->whereAddQuoted('md5', '=', $md5);
             $icdb->whereAddQUoted('mime', '=', $mime);
             $icdb->orderByArray(array('id' => 'ASC'));
             if ($icdb->find(true)) {
@@ -591,11 +584,12 @@ class ImageCache2_Thumbnailer
                 return str_pad(ceil($icdb->id / 1000), 5, 0, STR_PAD_LEFT);
             }
         }
-        $sql = 'SELECT MAX(' . $this->db->quoteIdentifier('id') . ') + 1 FROM '
-             . $this->db->quoteIdentifier($this->ini['General']['table']) . ';';
-        $nextid = $this->db->getOne($sql);
-        if (DB::isError($nextid) || !$nextid) {
-            $nextid = 1;
+        $icdb = new ImageCache2_DataObject_Images();
+        $icdb->select(sprintf('MAX(%s) + 1 as id', $icdb->quoteIdentifier('id')));
+        if ($icdb->find(true)) {
+            $nextid = $icdb->id;
+        } else {
+            p2die('DBに登録された画像の枚数を数えられませんでした');
         }
         return str_pad(ceil($nextid / 1000), 5, 0, STR_PAD_LEFT);
     }

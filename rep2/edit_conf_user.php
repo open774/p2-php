@@ -252,7 +252,7 @@ if ($flags & P2_EDIT_CONF_USER_SKIPPED) {
 板リストをオンラインURLから自動で読み込む。
 指定先は menu.html 形式、2channel.brd 形式のどちらでもよい。
 <!-- 必要なければ、空白に。 --><br>
-2ch基本 <a href="http://menu.2ch.net/bbsmenu.html" target="_blank">http://menu.2ch.net/bbsmenu.html</a><br>
+2ch基本 <a href="https://menu.5ch.net/bbsmenu.html" target="_blank">https://menu.5ch.net/bbsmenu.html</a><br>
 2ch + 外部BBS <a href="http://azlucky.s25.xrea.com/2chboard/bbsmenu.html" target="_blank">http://azlucky.s25.xrea.com/2chboard/bbsmenu.html</a>',
             P2_EDIT_CONF_USER_LONGTEXT),
     );
@@ -357,6 +357,7 @@ if ($flags & P2_EDIT_CONF_USER_SKIPPED) {
         array('ngaborn_chain_all', '表示範囲外のレスも連鎖NG/あぼーん/ハイライトの対象にする<br>(処理を軽くするため、デフォルトではしない)'),
         array('ngaborn_daylimit', 'この期間、NG/あぼーん/ハイライトにHITしなければ、登録ワードを自動的に外す (日数)'),
         array('ngaborn_purge_aborn', 'あぼーんレスは不可視divブロックも描画しない'),
+        array('ngaborn_exclude_one', '>>1 をあぼーんの対象外にする'),
     );
     printEditConfGroupHtml($groupname, $conflist, $flags);
 }
@@ -606,6 +607,7 @@ if ($flags & P2_EDIT_CONF_USER_SKIPPED) {
         array('expack.tgrep.quicksearch', '一発検索'),
         array('expack.tgrep.recent_num', '検索履歴を記録する数（記録しない:0）'),
         array('expack.tgrep.recent2_num', 'サーチボックスに検索履歴を記録する数、Safari専用（記録しない:0）'),
+        array('expack.tgrep.engine', '検索に使用する検索エンジン')
     );
     printEditConfGroupHtml($groupname, $conflist, $flags);
 }
@@ -861,6 +863,25 @@ if ($flags & P2_EDIT_CONF_USER_SKIPPED) {
         array('wiki.idsearch.spm.mimizun.enabled', 'みみずんID検索'),
         array('wiki.idsearch.spm.hissi.enabled', '必死チェッカーID検索'),
         array('wiki.idsearch.spm.stalker.enabled', 'IDストーカーID検索'),
+    );
+    printEditConfGroupHtml($groupname, $conflist, $flags);
+}
+
+// }}}
+// {{{ expack - ip2host
+
+$groupname = 'ip2host';
+$groups[] = $groupname;
+$flags = getGroupShowFlags($groupname);
+if ($flags & P2_EDIT_CONF_USER_SKIPPED) {
+    $keep_old = true;
+} else {
+    $conflist = array(
+        array('ip2host.enabled', 'ip2hostを利用'),
+        array('ip2host.replace.type', '書き換えのタイミング'),
+        array('ip2host.cache.type', 'キャッシュ方法'),
+        array('ip2host.cache.size', 'キャッシュの上限数'),
+        array('ip2host.aborn.enabled', '逆引き後のあぼーん処理'),
     );
     printEditConfGroupHtml($groupname, $conflist, $flags);
 }

@@ -351,7 +351,7 @@ exit;
 function tgrep_search($query)
 {
     global $_conf;
-    if (!$_conf['test.search_dig2ch']) {
+    if ($_conf['expack.tgrep.engine'] === "0") {
         $client = new HTTP_Client();
         $client->setDefaultHeader('User-Agent', 'p2-tgrep-client');
         $code = $client->get($_conf['expack.tgrep_url'] . '?' . $query);
@@ -366,11 +366,20 @@ function tgrep_search($query)
             p2die('Error: 検索結果の展開に失敗しました。');
         }
         return $result;
-    } else {
-//        require_once './dig2ch.php';
-//        return dig2chsearch($query); // 追加
+    } elseif ($_conf['expack.tgrep.engine'] === "1") {
+        require_once './dig2ch.php';
+        return dig2chsearch($query);
+    } elseif ($_conf['expack.tgrep.engine'] === "2") {
         require_once './refind2ch.php';
-        return refind2ch_search($query); // 追加
+        return refind2ch_search($query);
+    } elseif ($_conf['expack.tgrep.engine'] === "3") {
+        require_once './ff5ch.php';
+        return ff5ch_search($query);
+    } elseif ($_conf['expack.tgrep.engine'] === "4") {
+        require_once './find5ch.php';
+        return find5ch_search($query);
+    } else {
+        p2die('Error: 未知の検索エンジンが指定されました。tGrepの設定から選択してください。');
     }
 }
 

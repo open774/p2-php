@@ -116,8 +116,10 @@ class Thumbnailer_Gd extends Thumbnailer
             case '.jpg': $src = imagecreatefromjpeg($source); break;
             case '.png': $src = imagecreatefrompng($source); break;
             case '.gif': $src = imagecreatefromgif($source); break;
+            default:
+                $src = false;
         }
-        if (!is_resource($src)) {
+        if (!$src) {
             $error = PEAR::raiseError("Failed to load the image. ({$source})");
             return $error;
         }

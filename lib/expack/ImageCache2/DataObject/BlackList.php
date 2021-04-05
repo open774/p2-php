@@ -4,6 +4,13 @@
 
 class ImageCache2_DataObject_BlackList extends ImageCache2_DataObject_Common
 {
+    public $__table;                        // ƒe[ƒuƒ‹–¼
+    public $id;                             // INTEGER not_null primary
+    public $uri;                            // CHARACTER VARYING
+    public $size;                           // INTEGER not_null
+    public $md5;                            // CHARACTER not_null
+    public $type;                           // SMALLINT not_null
+
     // {{{ constants
 
     const NOMORE = 0;
@@ -17,20 +24,6 @@ class ImageCache2_DataObject_BlackList extends ImageCache2_DataObject_Common
     {
         parent::__construct();
         $this->__table = $this->_ini['General']['blacklist_table'];
-    }
-
-    // }}}
-    // {{{ table()
-
-    public function table()
-    {
-        return array(
-            'id'   => DB_DATAOBJECT_INT,
-            'uri'  => DB_DATAOBJECT_STR,
-            'size' => DB_DATAOBJECT_INT,
-            'md5'  => DB_DATAOBJECT_STR,
-            'type' => DB_DATAOBJECT_INT,
-        );
     }
 
     // }}}

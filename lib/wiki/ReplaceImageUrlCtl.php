@@ -174,6 +174,7 @@ class ReplaceImageUrlCtl extends WikiPluginCtlBase
 
         $this->setup();
         $src = false;
+        $return = [];
 
         if (array_key_exists($url, $this->onlineCache)) {
             return $this->onlineCache[$url];

@@ -50,7 +50,7 @@ class BrdMenu
         if (preg_match('/(html?|cgi)$/', $brdName)) {
             $this->format = 'html';
             $this->cate_match = '{<B>(.+)</B><BR>.*$}i';
-            $this->ita_match = '{^<A HREF="?(http://(.+)/([^/]+)/([^/]+\\.html?)?)"?( target="?_blank"?)?>(.+)</A>(<br>)?$}i';
+            $this->ita_match = '{^<A HREF="?(https?://(.+)/([^/]+)/([^/]+\\.html?)?)"?( target="?_blank"?)?>(.+)</A>(<br>)?$}i';
         // brdŒ`Ž®
         } else {
             $this->format = 'brd';

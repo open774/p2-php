@@ -176,8 +176,8 @@ if ($_conf['ktai']) {
 
 // DB_DataObjectを継承したDAO
 $icdb = new ImageCache2_DataObject_Images();
-$db = $icdb->getDatabaseConnection();
-$db_class = strtolower(get_class($db));
+$db = $icdb->PDO();
+$db_class = $icdb->db_class;
 
 if ($ini['Viewer']['cache']) {
     $kvs = P2KeyValueStore::getStore($_conf['iv2_cache_db_path'],
@@ -203,11 +203,8 @@ if ($ini['Viewer']['cache']) {
         $kvs->optimize();
 
         // SQLiteならVACUUMを実行
-        if ($db_class == 'db_sqlite') {
+        if ($db_class == 'sqlite') {
             $result = $db->query('VACUUM');
-            if (DB::isError($result)) {
-                p2die($result->getMessage());
-            }
         }
     }
 
@@ -282,7 +279,7 @@ $qf->addRule('mode', 'invalid mode.', 'arrayKeyExists', $_mode);
 $qf->addRule('thumbtype', 'invalid thumbtype.', 'arrayKeyExists', $_thumbtype);
 
 // Flexy
-$_flexy_options = &PEAR5::getStaticProperty('HTML_Template_Flexy', 'options');
+$_flexy_options = &PEAR::getStaticProperty('HTML_Template_Flexy', 'options');
 $_flexy_options = array(
     'locale' => 'ja',
     'charset' => 'Shift_JIS',
@@ -436,7 +433,7 @@ if ($keyword !== '') {
         if (strpos($k, '%') !== false || strpos($k, '_') !== false) {
             // SQLite2はLIKE演算子の右辺でバックスラッシュによるエスケープや
             // ESCAPEでエスケープ文字を指定することができないのでGLOB演算子を使う
-            if ($db_class == 'db_sqlite') {
+            if ($db_class == 'sqlite') {
                 if (strpos($k, '*') !== false || strpos($k, '?') !== false) {
                     p2die('ImageCache2 Warning', '「%または_」と「*または?」が混在するキーワードは使えません。');
                 } else {
@@ -468,7 +465,7 @@ if ($ini['Viewer']['unique'] == 1) {
 $_find_duplicated = 0; // 試験的パラメータ、登録レコード数がこれ以上の画像のみを抽出
 if ($_find_unique || $_find_duplicated > 1) {
     $subq = 'SELECT ' . (($sort == 'ASC') ? 'MIN' : 'MAX') . '(id) FROM ';
-    $subq .= $db->quoteIdentifier($ini['General']['table']);
+    $subq .= $icdb->quoteIdentifier($ini['General']['table']);
     if (isset($keywords)) {
         // サブクエリ内でフィルタリングするので親クエリのWHERE句をパクってきてリセット
         $subq .= $icdb->_query['condition'];
@@ -578,11 +575,7 @@ if (isset($_POST['edit_submit']) && !empty($_POST['change'])) {
 //$db->setFetchMode(DB_FETCHMODE_ORDERED);
 //$all = (int)$icdb->count('*', true);
 //$db->setFetchMode(DB_FETCHMODE_ASSOC);
-$sql = sprintf('SELECT COUNT(*) FROM %s %s', $db->quoteIdentifier($ini['General']['table']), $icdb->_query['condition']);
-$all = (int)$db->getOne($sql);
-if (DB::isError($all)) {
-    p2die($all->getMessage());
-}
+$all = $icdb->count('*');
 
 // マッチするレコードがなかったらエラーを表示、レコードがあれば表示用オブジェクトに値を代入
 if ($all === 0) {
@@ -759,7 +752,7 @@ if ($all === 0) {
             $orderBy = '(width * height) ' . $sort;
         }
     } elseif ($order == 'date_uri' || $order == 'date_uri2') {
-        if ($db_class == 'db_sqlite') {
+        if ($db_class == 'sqlite') {
             /*
             function iv2_sqlite_unix2date($ts)
             {
@@ -771,16 +764,16 @@ if ($all === 0) {
             $time2date = 'php(\'date\', \'Ymd\', "time")';
         } else {
             // 32400 = 9*60*60 (時差補正)
-            $time2date = sprintf('floor((%s + 32400) / 86400)', $db->quoteIdentifier('time'));
+            $time2date = sprintf('floor((%s + 32400) / 86400)', $icdb->quoteIdentifier('time'));
         }
-        $orderBy = sprintf('%s %s, %s ', $time2date, $sort, $db->quoteIdentifier('uri'));
+        $orderBy = sprintf('%s %s, %s ', $time2date, $sort, $icdb->quoteIdentifier('uri'));
         if ($order == 'date_uri') {
             $orderBy .= $sort;
         } else {
             $orderBy .= ($sort == 'ASC') ? 'DESC' : 'ASC';
         }
     } else {
-        $orderBy = $db->quoteIdentifier($order) . ' ' . $sort;
+        $orderBy = $icdb->quoteIdentifier($order) . ' ' . $sort;
     }
     $orderBy .= ' , id ' . $sort;
     $icdb->orderBy($orderBy);
@@ -1054,7 +1047,7 @@ EOP;
     $flexy->setData('limelight_header', $limelight_header);
     $flexy->output();
 } elseif ($list_template == 'iv2i.tpl.html') {
-    $mobile = Net_UserAgent_Mobile::singleton();
+    $mobile = (new Net_UserAgent_Mobile)->singleton();
     $elements = $flexy->getElements();
     if ($mobile->isDoCoMo()) {
         $elements['page']->setAttributes('istyle="4"');

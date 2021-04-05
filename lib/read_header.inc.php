@@ -225,8 +225,9 @@ echo <<<EOP
 EOP;
 
 // +live ŽÀ‹µ•\Ž¦ html popup ØŠ·
+$live_view_popup = '';
 if ($_conf['live.view_type'] > 1 ) {
-	$live_view_popup = live_;
+	$live_view_popup = 'live_';
 }
 
 if ($_conf['iframe_popup_type'] == 1) {
@@ -306,6 +307,7 @@ EOP;
 }
 
 $onload_script = '';
+$onUnload_script = '';
 
 if ($_conf['bottom_res_form']) {
     echo "\t<link rel=\"stylesheet\" type=\"text/css\" href=\"css.php?css=post&amp;skin={$skin_en}\">\n";

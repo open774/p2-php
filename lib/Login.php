@@ -302,7 +302,7 @@ class Login
 
         // }}}
 
-        $mobile = Net_UserAgent_Mobile::singleton();
+        $mobile = (new Net_UserAgent_Mobile)->singleton();
 
         // {{{ フォームからログインした時
 

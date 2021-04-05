@@ -49,15 +49,13 @@ function ic2_loadconfig()
             $ini[$cat][$name] = $_conf[$key];
         }
 
-        // DB_DataObject‚Ìİ’è
-        $_dao_options = &PEAR::getStaticProperty('DB_DataObject', 'options');
-        if (!is_array($_dao_options)) {
-            $_dao_options = array();
-        }
-        $_dao_options['database'] = $ini['General']['dsn'];
-        $_dao_options['debug'] = false;
-        $_dao_options['quote_identifiers'] = true;
-        $_dao_options['db_driver'] = 'DB';
+        // PDO_DataObject‚Ìİ’è
+        PDO_DataObject::config([
+            'database' => $ini['General']['dsn'],
+            'quote_identifiers' => true,
+            'proxy'=>true,
+            'debug'=>false
+        ]);
     }
 
     return $ini;

@@ -55,7 +55,7 @@ function setPal($host, $bbs, $key, $setpal, $ttitle = null)
             $i++;
             $lar = explode('<>', $l);
             // 重複回避
-            if ($lar[1] == $key && $lar[11] == $bbs) {
+            if ($lar[1] == $key && $lar[11] == $bbs && $lar[10] == $host) {
                 $pal_attayo = true;
                 $before_line_num = $i;    // 移動前の行番号をセット
                 continue;

@@ -10,11 +10,12 @@ $_conf['expack.ic2.general.cachedir'] = P2_WWW_DIR . '/ic';
 $_conf['expack.ic2.general.cacheuri'] = './ic';
 
 // DSN (DBに接続するためのデータソース名)
-// @link http://jp.pear.php.net/manual/ja/package.database.db.intro-dsn.php
+// @link https://roojs.github.io/PDO_DataObject/docs/index.html#config
 // 例)
-//  MySQL:       'mysqli://username:password@localhost:3306/database'
-//  PostgreSQL:  'pgsql://username:password@localhost:5432/database'
-//  SQLite2:     'sqlite:///' . $_conf['db_dir'] . '/imgcache.sqlite'
+//  MySQL: 'mysql://username:password@localhost:3306/database?charset=utf8'
+//  MySQL (via UNIX domain socket): 'mysql://username:password@localhost/database?charset=utf8;unix_socket=/run/mysqld/mysqld.sock'
+//  PostgreSQL: 'pgsql://username:password@localhost:5432/database'
+//  SQLite: 'sqlite:/' . $_conf['db_dir'] . '/imgcache.sqlite'
 // 注1: username,password,databaseは実際のものと読み替える。
 // 注2: MySQL,PosrgreSQLでは予めデータベースを作っておく。
 $_conf['expack.ic2.general.dsn'] = "";
@@ -141,7 +142,7 @@ $_conf['expack.ic2.getter.title'] = "ImageCache2::Getter";
 // エラーログにある画像はダウンロードを試みない (no:0;yes:1)
 $_conf['expack.ic2.getter.checkerror'] = 1;
 
-// デフォルトでURL+.htmlの偽リファラを送る (no:0;yes:1)
+// デフォルトでURLの偽リファラを送る (no:0;yes:1)
 $_conf['expack.ic2.getter.sendreferer'] = 0;
 
 // sendreferer = 0 のとき、例外的にリファラを送るホスト（カンマ区切り）

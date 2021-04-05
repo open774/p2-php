@@ -30,6 +30,7 @@ $ttitle_en_q = "&amp;ttitle_en=" . $ttitle_urlen;
 $live_read = "live_read.php";
 $live_q = "&amp;live=1";
 
+$offline_q = '';
 if ($_GET['offline']) {
 	$offline_l = isset($_GET['offline']) ? $_GET['offline'] : '';
 	$offline_q = "&amp;offline=" . $offline_l;
@@ -37,6 +38,7 @@ if ($_GET['offline']) {
 	$live_q = "&amp;live=0";
 }
 
+$word_q = '';
 if ($_GET['word']) {
 	$word_l = isset($_GET['word']) ? $_GET['word'] : '';
 	$method_l = isset($_GET['method']) ? $_GET['method'] : '';

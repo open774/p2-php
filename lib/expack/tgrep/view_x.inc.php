@@ -67,13 +67,13 @@ if (isset($_GET['ic'])) {
         }
 
         usort($boards,
-              create_function('$a, $b',
-                              'if (($c = $b->hits - $a->hits) != 0) {
-                                   return $c;
-                               }
-                               return strcasecmp($a->name, $b->name);'
-                               )
-              );
+            function ($a, $b) {
+                if (($c = $b->hits - $a->hits) != 0) {
+                    return $c;
+                }
+                return strcasecmp($a->name, $b->name);
+            }
+        );
 
         foreach ($boards as $board) {
             printf('<li><a href="%s&amp;ib=%d&amp;S=%s&amp;B=%s">%s' .

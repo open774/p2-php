@@ -391,7 +391,7 @@ EOP;
      */
     public function transName($name)
     {
-        $name = strip_tags($name);
+        $name = strtr($name, array('<b>' => '', '</b>' => '')); 
 
         // トリップやホスト付きなら分解する
         if (($pos = strpos($name, '◆')) !== false) {
@@ -445,6 +445,9 @@ EOP;
             $msg = preg_replace('/&amp(?=[^;])/', '&', $msg);
         }
 
+		// サロゲートペアの数値文字参照を変換
+        $msg = P2Util::replaceNumericalSurrogatePair($msg);
+		
         // &補正
         $msg = preg_replace('/&(?!#?\\w+;)/', '&amp;', $msg);
 

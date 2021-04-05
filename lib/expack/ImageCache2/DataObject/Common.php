@@ -5,13 +5,11 @@
 /**
  * @abstract
  */
-class ImageCache2_DataObject_Common extends DB_DataObject
+class ImageCache2_DataObject_Common extends PDO_DataObject
 {
     // {{{ properties
-
-    protected $_db;
     protected $_ini;
-
+    public $db_class;
     // }}}
     // {{{ constcurtor
 
@@ -20,52 +18,10 @@ class ImageCache2_DataObject_Common extends DB_DataObject
      */
     public function __construct()
     {
-        static $set_to_utf8 = false;
-
+        parent::__construct();
         // 設定の読み込み
-        $ini = ic2_loadconfig();
-        $this->_ini = $ini;
-        if (!$ini['General']['dsn']) {
-            p2die('DSNが設定されていません。');
-        }
-
-        // データベースへ接続
-        $this->_database_dsn = $ini['General']['dsn'];
-        $this->_db = $this->getDatabaseConnection();
-        if (DB::isError($this->_db)) {
-            p2die($this->_db->getMessage());
-        }
-
-        // クライアントの文字セットに UTF-8 を指定
-        if (!$set_to_utf8) {
-            if (preg_match('/^(\w+)(?:\((\w+)\))?:/', $this->_database_dsn, $m)) {
-                $driver = strtolower($m[1]);
-            } else {
-                $driver = 'unknown';
-            }
-
-            switch ($driver) {
-            case 'mysql':
-            case 'mysqli':
-                if ($driver == 'mysql' && function_exists('mysql_set_charset')) {
-                    mysql_set_charset('utf8', $this->_db->connection);
-                } elseif ($driver == 'mysqli' && function_exists('mysqli_set_charset')) {
-                    mysqli_set_charset($this->_db->connection, 'utf8');
-                } else {
-                    $this->_db->query("SET NAMES utf8");
-                }
-                break;
-            case 'pgsql':
-                if (function_exists('pg_set_client_encoding')) {
-                    pg_set_client_encoding($this->_db->connection, 'UNICODE');
-                } else {
-                    $this->_db->query("SET CLIENT_ENCODING TO 'UNICODE'");
-                }
-                break;
-            }
-
-            $set_to_utf8 = true;
-        }
+        $this->_ini = ic2_loadconfig();
+        $this->db_class = explode(':', $this->_ini['General']['dsn'])[0];
     }
 
     // }}}
@@ -76,10 +32,10 @@ class ImageCache2_DataObject_Common extends DB_DataObject
      */
     public function whereAddQuoted($key, $cmp, $value, $logic = 'AND')
     {
-        $types = $this->table();
-        $col = $this->_db->quoteIdentifier($key);
-        if ($types[$key] != DB_DATAOBJECT_INT) {
-            $value = $this->_db->quoteSmart($value);
+        $types = $this->tableColumns();
+        $col = $this->quoteIdentifier($key);
+        if ($types[$key] != PDO_DataObject::INT) {
+            $value = $this->PDO()->quote($value);
         }
         $cond = sprintf('%s %s %s', $col, $cmp, $value);
         return $this->whereAdd($cond, $logic);
@@ -103,7 +59,7 @@ class ImageCache2_DataObject_Common extends DB_DataObject
                     continue;
                 }
             }
-            $k = $this->_db->quoteIdentifier($k);
+            $k = $this->quoteIdentifier($k);
             if (!$d || strtoupper($d) == 'DESC') {
                 $order[] = $k . ' DESC';
             } else {

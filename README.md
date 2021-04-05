@@ -1,23 +1,28 @@
-﻿# rep2 expack 全部入り by open774
+﻿# rep2 expack 全部入り by （´・ω・） ｽ
 
 * rep2-expack https://github.com/rsky/p2-php
 * rep2-expack +live https://github.com/pluslive/p2-php
 * rep2-expack test https://github.com/orzisun/p2-php
+* rep2-expack https://github.com/open774/p2-php
+* rep2-expack https://github.com/junk2ool/p2-php
 
 上記やスレに上げられた修正を取り込んで全部入りを目指す闇鍋バージョンです。
 
-独自の改良も行っています。
+このリポジトリにはrep2をPHP 8.xで動かすためのパッチが含まれています。
 
-* [スクリーンショット](https://open774.github.io/p2-php/screenshots.html)
-* [Wiki](https://github.com/open774/p2-php/wiki)
-* **[FAQ](https://github.com/open774/p2-php/wiki/FAQ) スレに書く前にからならず確認**
+- [スクリーンショット](https://open774.github.io/p2-php/screenshots.html)
+- [Wiki](https://github.com/open774/p2-php/wiki)
+- [p2Wiki](http://akid.s17.xrea.com/p2puki/index.phtml)
+- **[FAQ](https://github.com/open774/p2-php/wiki/FAQ) スレに書く前にからならず確認**
 
 ### 主な追加機能
 
 各機能の説明はdocディレクトリのREADMEファイルを見てください。
 
 * cronとかで最近読んだスレなどのdatをDL出来るスクリプト追加
-  <pre> php scripts/fetch-dat.php --mode モードを一つ指定(fav recent res_hist)</pre>
+```shell
+php scripts/fetch-dat.php --mode モードを一つ指定(fav recent res_hist)
+```
 * 名無しが節穴になる板に名無しで書き込むときに警告を出す機能を追加
 * NGあぼーんの対象になったレスのIDを自動的にNGあぼーんする機能を追加
 * 「設定管理」からキャッシュ・履歴の消去できる機能を追加
@@ -33,19 +38,31 @@
 ### Git & Composerで
 
 1. 本体をclone
-  <pre>git clone git://github.com/open774/p2-php.git
-  cd p2-php</pre>
+
+```shell
+git clone git://github.com/open774/p2-php.git
+cd p2-php
+```
 
 2. 依存ライブラリをダウンロード
-  <pre>curl -O http://getcomposer.org/composer.phar
-  php -d detect_unicode=0 composer.phar install</pre>
+
+⚠️ **PEARサポートが廃止されたComposer 2.xでは動作しません** ⚠️
+
+```shell
+curl -O https://getcomposer.org/download/1.10.19/composer.phar
+php -d detect_unicode=0 composer.phar install
+```
 
 3. Webサーバが書き込めるようにディレクトリのアクセス権をセット  
-  (CGI/suEXECIやCLI/Built-in web serverでは不要)
-  <pre>chmod 0777 data/* rep2/ic</pre>
 
+(CGI/suEXECIやCLI/Built-in web serverでは不要)
+
+```shell
+chmod 0777 data/* rep2/ic
+```
 
 ## 動作環境
+
 Linux(openSUSE Leap)のPHP7+Apacheで動作確認しています。
 PHP5.6以降で動くはずですが、PHP7.*推奨です。
 PHP7での不具合修正を優先するため突然PHP5.xのサポートが終わる可能性があります。
@@ -54,26 +71,28 @@ PHP7での不具合修正を優先するため突然PHP5.xのサポートが終�
 
 何かエラーが出たらがんばって環境を整えてください。
 
-    php scripts/p2cmd.php check
-
+```shell
+php scripts/p2cmd.php check
+```
 
 ## Built-in web serverで使ってみる (PHP 5.4+)
 
-PHP 5.4の新機能、[ビルトインウェブサーバー](http://docs.php.net/manual/ja/features.commandline.webserver.php)で簡単に試せます。
+PHP 5.4の新機能、[ビルトインウェブサーバー](http://docs.php.net/manual/ja/features.commandline.webserver.php) で簡単に試せます。
 
 以下のようにすると、Webサーバーの設定をしなくても `http://localhost:8080/` でrep2を使えます。**(Windowsでも!)**
 
-    cd rep2
-    php -S localhost:8080 web.php
+```shell
+cd rep2
+php -S localhost:8080 web.php
+```
 
 moriyoshi++
-
 
 ## 画像を自動で保存したい
 
 スレに貼られている画像を自動で保存する機能、**ImageCache2**があります。
 
-see also [doc/ImageCache2/README.txt](https://github.com/open774/p2-php/blob/master/doc/ImageCache2/README.txt), [doc/ImageCache2/INSTALL.txt](https://github.com/open774/p2-php/blob/master/doc/ImageCache2/INSTALL.txt)
+see also [doc/ImageCache2/README.txt](doc/ImageCache2/README.txt), [doc/ImageCache2/INSTALL.txt](doc/ImageCache2/INSTALL.txt)
 
 ### 準備
 
@@ -92,7 +111,6 @@ see also [doc/ImageCache2/README.txt](https://github.com/open774/p2-php/blob/mas
 
 * PHP 5.4ではSQLite2がサポートされなくなったので、ImageCache2を使いたいときはMySQLかPostgreSQLが必要です。
 * ホストに`localhost`を指定して接続できないときは、代わりに`127.0.0.1`にしてみてください。
-
 
 ## 設定を変えたい
 
@@ -128,7 +146,6 @@ Webブラウザから変更できない項目は [conf/conf_admin.inc.php](https
     php -d detect_unicode=0 composer.phar self-update
     php -d detect_unicode=0 composer.phar update
 
-
 ## Authors & Contributors
 
 * **aki** *(original)* http://akid.s17.xrea.com/
@@ -142,7 +159,6 @@ Webブラウザから変更できない項目は [conf/conf_admin.inc.php](https
 * **dgg712** https://github.com/dgg712/p2-php
 * **2ch p2/rep2スレの>>1-1000**
 
-
 ## License
 
-see [LICENSE.txt](https://github.com/rsky/p2-php/blob/master/LICENSE.txt)
+see [LICENSE.txt](LICENSE.txt)

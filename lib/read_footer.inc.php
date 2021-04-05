@@ -196,6 +196,11 @@ if ($_GET['live']) {
 LIVE;
 }
 
+// ip2host
+if ($_conf['ip2host.enabled']) {
+    include P2EX_LIB_DIR . '/ip2host.inc.php';
+}
+
 // ====
 echo '</body></html>';
 

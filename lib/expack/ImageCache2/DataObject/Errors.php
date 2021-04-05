@@ -4,25 +4,18 @@
 
 class ImageCache2_DataObject_Errors extends ImageCache2_DataObject_Common
 {
+    public $__table;                        // テーブル名
+    public $uri;                            // CHARACTER VARYING
+    public $errcode;                        // CHARACTER VARYING not_null
+    public $errmsg;                         // TEXT
+    public $occured;                        // INTEGER not_null
+
     // {{{ constcurtor
 
     public function __construct()
     {
         parent::__construct();
         $this->__table = $this->_ini['General']['error_table'];
-    }
-
-    // }}}
-    // {{{ table()
-
-    public function table()
-    {
-        return array(
-            'uri'     => DB_DATAOBJECT_STR,
-            'errcode' => DB_DATAOBJECT_STR,
-            'errmsg'  => DB_DATAOBJECT_STR,
-            'occured' => DB_DATAOBJECT_INT,
-        );
     }
 
     // }}}
@@ -36,35 +29,46 @@ class ImageCache2_DataObject_Errors extends ImageCache2_DataObject_Common
     // }}}
     // {{{ ic2_errlog_lotate()
 
+    /**
+     * ログの総数がerror_log_numを超えたら古いログから切り詰める
+     */
     public function ic2_errlog_lotate()
     {
         $ini = ic2_loadconfig();
         $error_log_num = $ini['General']['error_log_num'];
         if ($error_log_num > 0) {
-            $q_table = $this->_db->quoteIdentifier($this->__table);
-            $sql1 = 'SELECT COUNT(*) FROM ' . $q_table;
-            $sql2 = 'SELECT MIN(occured) FROM ' . $q_table;
-            $sql3 = 'DELETE FROM ' . $q_table . ' WHERE occured = ';
+            $db = $this->PDO();
+            $table = $this->__table;
 
-            while (($r1 = $this->_db->getOne($sql1)) > $error_log_num) {
-                if (DB::isError($r1)) {
-                    return $r1;
-                }
-                $r2 = $this->_db->getOne($sql2);
-                if (DB::isError($r2)) {
-                    return $r2;
-                }
-                $r3 = $this->_db->query($sql3 . $r2);
-                if (DB::isError($r3)) {
-                    return $r3;
-                }
-                if ($this->_db->affectedRows() == 0) {
-                    break;
-                }
+            $getLogRows = function () use ($db, $table) {
+                $stmt = $db->prepare('SELECT COUNT(*) FROM ' . $this->quoteIdentifier($table));
+                $stmt->execute();
+                return $stmt->fetch()[0];
+            };
+
+            $getRemovalLogs = function ($limit) use ($db, $table) {
+                $stmt = $db->prepare('SELECT ' . $this->quoteIdentifier('occured') . ' FROM ' . $this->quoteIdentifier($table) . ' ORDER BY ' . $this->quoteIdentifier('occured') . ' LIMIT :num;');
+                $stmt->bindValue(':num', $limit, PDO::PARAM_INT);
+                $stmt->execute();
+                return $stmt->fetchAll(PDO::FETCH_COLUMN);
+            };
+
+            $deleteLog = function ($occured) use ($db, $table) {
+                $stmt = $db->prepare('DELETE FROM ' . $this->quoteIdentifier($table) . ' WHERE ' . $this->quoteIdentifier('occured') . ' = :occured;');
+                $stmt->bindValue('occured', $occured, PDO::PARAM_INT);
+                $stmt->execute();
+                return $stmt->rowCount();
+            };
+
+            $num = $getLogRows() - $error_log_num;
+            if ($num <= 0) {
+                return;
             }
 
+            foreach ($getRemovalLogs($num) as $occured) {
+                $deleteLog($occured);
+            }
         }
-        return DB_OK;
     }
 
     // }}}
@@ -72,7 +76,7 @@ class ImageCache2_DataObject_Errors extends ImageCache2_DataObject_Common
 
     public function ic2_errlog_clean()
     {
-        return $this->_db->query('DELETE FROM ' . $this->_db->quoteIdentifier($this->__table));
+        return $this->PDO()->query('DELETE FROM ' . $this->quoteIdentifier($this->__table));
     }
 
     // }}}

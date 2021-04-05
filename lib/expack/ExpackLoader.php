@@ -218,7 +218,7 @@ class ExpackLoader
         if ($_conf['iphone']) {
             $aShowThread->aas_rotate = '&#x21BB;';
         } elseif ($_conf['ktai']) {
-            $mobile = Net_UserAgent_Mobile::singleton();
+            $mobile = (new Net_UserAgent_Mobile)->singleton();
             /**
              * @link http://www.nttdocomo.co.jp/service/imode/make/content/pictograph/
              * @link http://www.au.kddi.com/ezfactory/tec/spec/3.html

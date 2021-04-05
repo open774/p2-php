@@ -35,6 +35,7 @@ class ThreadRead extends Thread {
     public function __construct() {
         parent::__construct ();
         $this->getdat_error_msg_ht = "";
+        $this->datochi_residuums = array();
     }
 
     // }}}

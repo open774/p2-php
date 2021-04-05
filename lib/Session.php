@@ -256,7 +256,7 @@ class Session
     {
         // {{{ docomo‚ÍUTNŽž‚ÉUAŒã•”‚ª•Ï‚í‚é‚Ì‚Å‹@Ží–¼‚ÅŒŸØ‚·‚é
 
-        $mobile = Net_UserAgent_Mobile::singleton();
+        $mobile = (new Net_UserAgent_Mobile)->singleton();
         if ($mobile->isDoCoMo()) {
             $mobile_b = Net_UserAgent_Mobile::factory($_SESSION[$this->sess_array]['ua']);
             if ($mobile_b->getModel() == $mobile->getModel()) {

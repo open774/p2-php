@@ -95,6 +95,7 @@ class LastmodifyTxt
             $response = P2Commun::getHTTPResponse($req);
 
             $code = $response->getStatus();
+            $body = '';
             if ($code == 302) {
                 // ƒzƒXƒg‚ÌˆÚ“]‚ð’ÇÕ
                 $new_host = P2HostMgr::getCurrentHost($this->host, $this->bbs);

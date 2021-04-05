@@ -100,19 +100,19 @@ if (isset($_POST['sync'])) {
 
 } elseif (isset($_POST['delete']) && isset($_POST['submit'])) { // —š—ğ‚Ìíœˆ—
     switch ($_POST['delete']) {
-        case cookie:
+        case 'cookie':
             // cookie
-            $delflag = CookieDataStore::clear() === flase ? false : true;
+            $delflag = CookieDataStore::clear() === false ? false : true;
             break;
-        case matome:
+        case 'matome':
             // V’…‚Ü‚Æ‚ß“Ç‚İ
-            $delflag = MatomeCacheList::trim(0) === flase ? false : true;
+            $delflag = MatomeCacheList::trim(0) === false ? false : true;
             break;
-        case recent:
+        case 'recent':
             // Å‹ß“Ç‚ñ‚¾ƒXƒŒ
             $delflag = deleteFile($_conf['recent_idx']);
             break;
-        case reshist:
+        case 'reshist':
             // ‘—š—ğ
             if(deleteFile($_conf['res_hist_idx']) &&
             deleteFile($_conf['res_hist_dat']) &&
@@ -120,13 +120,13 @@ if (isset($_POST['sync'])) {
                 $delflag = true;
             }
             break;
-        case autong:
+        case 'autong':
             if(deleteFile($_conf['pref_dir'] . '/p2_aborn_auto.txt') &&
             deleteFile($_conf['pref_dir'] . '/p2_ng_auto.txt') ) {
                 $delflag = true;
             }
             break;
-        case boardlist:
+        case 'boardlist':
             $cachefile = P2Util::cacheFileForDL($_conf['brdfile_online']);
             if(deleteFile($_conf['cache_dir'] . '/host_bbs_map.txt') &&
                 deleteFile($cachefile) &&

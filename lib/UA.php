@@ -364,7 +364,7 @@ class UA
         if (!is_null($ua)) {
             $nuam = Net_UserAgent_Mobile::factory($ua);
         } else {
-            $nuam = Net_UserAgent_Mobile::singleton();
+            $nuam = (new Net_UserAgent_Mobile)->singleton();
         }
 
         if (PEAR::isError($nuam)) {

@@ -681,6 +681,11 @@ abstract class ShowThread
         $info = array();
         $type = self::NG_NONE;
 
+        // >>1 をあぼーんの対象外にする
+        if ($_conf['ngaborn_exclude_one'] && $i == 1) {
+            return $type;
+        }
+
         // {{{ 頻出IDチェック
 
         if ($this->_ngaborn_frequent && $id && $this->thread->idcount[$id] >= $_conf['ngaborn_frequent_num']) {
@@ -1538,9 +1543,27 @@ abstract class ShowThread
             return false;
         }
 
+        // HTMLタグを除去
+        $name = strip_tags(trim($name));
+
+        // デフォルトの名無し名を除去
+        if (isset($this->_nanashiName)) {
+            $name = str_replace($this->_nanashiName, "", $name);
+        }
+
+        /*
+         * ワッチョイを除去
+         * (ﾜｯﾁｮｲW a897-sa51)
+         * (ｽｯｯﾌﾟ Ad38-g1G2 [11.11.11.11 [上級国民]])
+         */
+        $name = preg_replace('/\(.+ .{4}-.{4}( \[.+])?\)/', '', $name, 1);
+
         // トリップを除去
         $name = preg_replace('/◆.*/', '', $name, 1);
-        $name = strip_tags($name);
+
+        if (strlen($name) == 0) {
+            return false;
+        }
 
         /*
         //if (preg_match('/[0-9]+/', $name, $m)) {

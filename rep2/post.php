@@ -36,7 +36,7 @@ $newtime = date('gis');
 
 $post_param_keys    = array('bbs', 'key', 'time', 'FROM', 'mail', 'MESSAGE', 'subject', 'submit');
 $post_internal_keys = array('host', 'sub', 'popup', 'rescount', 'ttitle_en');
-$post_optional_keys = array('newthread', 'beres', 'p2res', 'from_read_new', 'maru', 'csrfid');
+$post_optional_keys = array('newthread', 'beres', 'p2res', 'from_read_new', 'maru', 'csrfid', 'proxy');
 $post_p2_flag_keys  = array('b', 'p2_post_confirm_cookie');
 
 foreach ($post_param_keys as $pk) {
@@ -212,7 +212,7 @@ PostDataStore::set($post_config_key, array(
 PostDataStore::set($post_backup_key, $post_cache);
 
 // cookie 読み込み
-$cookie_key = $_login->user_u . '/' . P2Util::normalizeHostName(P2HostMgr::isHostBbsPink($host) ? 'www.bbspink.com' : P2HostMgr::isHost2chs($host) ? 'www.2ch.net' : $host); // 忍法帳対応
+$cookie_key = $_login->user_u . '/' . P2Util::normalizeHostName(P2HostMgr::isHostBbsPink($host) ? 'www.bbspink.com' : (P2HostMgr::isHost2chs($host) ? 'www.5ch.net' : $host)); // 忍法帳対応
 if ($p2cookies = CookieDataStore::get($cookie_key)) {
     if (is_array($p2cookies)) {
         if (array_key_exists('expires', $p2cookies)) {
@@ -230,8 +230,24 @@ if ($p2cookies = CookieDataStore::get($cookie_key)) {
     $p2cookies = null;
 }
 
-// 直接書き込み
-$posted = postIt($host, $bbs, $key, $post);
+if ($_conf['proxy_host']) {
+    // 一時的にプロキシのオンオフを切り替えて書き込み
+    global $_conf;
+
+    $bak_proxy_use = $_conf['proxy_use'];
+    if (empty($_REQUEST['proxy']) || !$_REQUEST['proxy']) {
+        // proxyをオフで書き込み
+        $_conf['proxy_use'] = 0;
+    } else {
+        // proxyをオンで書き込み
+        $_conf['proxy_use'] = 1;
+    }
+    $posted = postIt($host, $bbs, $key, $post);
+    $_conf['proxy_use'] = $bak_proxy_use;
+} else {
+    // 直接書き込み
+    $posted = postIt($host, $bbs, $key, $post);
+}
 
 // cookie 保存
 if ($p2cookies) {
@@ -399,7 +415,11 @@ function postIt($host, $bbs, $key, $post)
         $req = P2Commun::createHTTPRequest ($bbs_cgi_url,HTTP_Request2::METHOD_POST);
 
         // ヘッダ
-        $req->setHeader('Referer', "http://{$host}/{$bbs}/{$key}/");
+        if (P2HostMgr::isHost2chs($host) && ! P2HostMgr::isHostBbsPink($host) && $_conf['2ch_ssl.post']) {
+            $req->setHeader('Referer', "https://{$host}/{$bbs}/{$key}/");
+        } else {
+            $req->setHeader('Referer', "http://{$host}/{$bbs}/{$key}/");
+        }
 
         // クッキー
         if ($p2cookies) {
@@ -425,7 +445,7 @@ function postIt($host, $bbs, $key, $post)
         }
 
         // POSTする内容
-        while (list($name, $value) = each($post)) {
+        foreach ($post as $name => $value) {
 
             // したらば or be.2ch.netなら、EUCに変換
             if (P2HostMgr::isHostJbbsShitaraba($host) || P2HostMgr::isHostBe2chs($host)) {

@@ -148,8 +148,9 @@ echo <<<EOHEADER
 EOHEADER;
 
 // +live ŽÀ‹µ•\Ž¦ html popup ØŠ·
+$live_view_popup = '';
 if ($_conf['live.view_type'] > 1 ) {
-	$live_view_popup = live_;
+	$live_view_popup = 'live_';
 }
 
 if ($_conf['iframe_popup_type'] == 1) {
@@ -217,7 +218,6 @@ if ($_conf['iframe_popup_type'] == 1) {
     $fade = empty($_GET['fade']) ? 'false' : 'true';
     $onload_script .= "gFade = {$fade};";
     $bodyadd = ' onclick="hideHtmlPopUp(event);"';
-EOP;
 }
 
 if ($_conf['backlink_coloring_track']) {

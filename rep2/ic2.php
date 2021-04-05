@@ -339,7 +339,7 @@ try {
             }
         }
         if ($send_referer) {
-            $referer = $uri . '.html';
+            $referer = $uri;
         }
     }
 
@@ -509,7 +509,8 @@ if ($retry && $size == $_size && $md5 == $_md5 && $mime == $_mime) {
     $record->insert();
 }
 
-$is_anigif = false; $is_gif_caution == false;
+$is_anigif = false;
+$is_gif_caution = false;
 if (($ini['Thumbdeco']['anigif'] || $ini['Thumbdeco']['gifcaution']) && $params['mime'] == 'image/gif') {
     $is_anigif = check_anigif($newfile);
     if ($ini['Thumbdeco']['gifcaution']) {
@@ -722,7 +723,7 @@ function ic2_display($url, $params)
                 'q' => $ini["Thumb{$thumb}"]['quality'],
                 'r'  => '0',
             );
-            $mobile = Net_UserAgent_Mobile::singleton();
+            $mobile = (new Net_UserAgent_Mobile)->singleton();
             $qa = 'size=3 maxlength=3';
             if ($mobile->isDoCoMo()) {
                 $qa .= ' istyle=4';
@@ -752,7 +753,7 @@ function ic2_display($url, $params)
             $qf->addElement('submit', 'o');
 
             // Flexy‚ÆQurickForm_Renderer‚Ì‰Šú‰»
-            $_flexy_options = &PEAR5::getStaticProperty('HTML_Template_Flexy', 'options');
+            $_flexy_options = &PEAR::getStaticProperty('HTML_Template_Flexy', 'options');
             $_flexy_options = array(
                 'locale' => 'ja',
                 'charset' => 'Shift_JIS',

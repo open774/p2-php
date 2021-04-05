@@ -109,7 +109,9 @@ if ($popup == 2) {
 
         if (file_exists($path) && ($data = FileCtl::file_read_lines($path))) {
             $data = array_map('trim', $data);
-            $data = array_filter($data, create_function('$v', 'return ($v !== "");'));
+            $data = array_filter($data, function ($v) {
+                return ($v !== "");
+            });
             array_unshift($data, $aborn_str);
             $data = array_unique($data);
         } else {

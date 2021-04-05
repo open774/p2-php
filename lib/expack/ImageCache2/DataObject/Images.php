@@ -4,6 +4,20 @@
 
 class ImageCache2_DataObject_Images extends ImageCache2_DataObject_Common
 {
+    public $__table;                        // ƒe[ƒuƒ‹–¼
+    public $id;                             // INTEGER not_null primary
+    public $uri;                            // CHARACTER VARYING
+    public $host;                           // CHARACTER VARYING
+    public $name;                           // CHARACTER VARYING
+    public $size;                           // INTEGER not_null
+    public $md5;                            // CHARACTER not_null
+    public $width;                          // SMALLINT not_null
+    public $height;                         // SMALLINT not_null
+    public $mime;                           // CHARACTER VARYING not_null
+    public $time;                           // INTEGER not_null
+    public $rank;                           // SMALLINT not_null
+    public $memo;                           // TEXT
+
     // {{{ constants
 
     const OK     = 0;
@@ -20,30 +34,6 @@ class ImageCache2_DataObject_Images extends ImageCache2_DataObject_Common
         parent::__construct();
         $this->__table = $this->_ini['General']['table'];
     }
-
-    // }}}
-    // {{{ table()
-
-    public function table()
-    {
-        return array(
-            'id'   => DB_DATAOBJECT_INT,
-            'uri'  => DB_DATAOBJECT_STR,
-            'host' => DB_DATAOBJECT_STR,
-            'name' => DB_DATAOBJECT_STR,
-            'size' => DB_DATAOBJECT_INT,
-            'md5'  => DB_DATAOBJECT_STR,
-            'width'  => DB_DATAOBJECT_INT,
-            'height' => DB_DATAOBJECT_INT,
-            'mime' => DB_DATAOBJECT_STR,
-            'time' => DB_DATAOBJECT_INT,
-            'rank' => DB_DATAOBJECT_INT,
-            'memo' => DB_DATAOBJECT_STR,
-        );
-    }
-
-    // }}}
-    // {{{ keys()
 
     public function keys()
     {

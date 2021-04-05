@@ -34,7 +34,11 @@ class P2CurlMulti
         foreach ($subjects as $key => $subject) {
             list($host, $bbs) = explode("_", $key);
 
-            $url = "http://{$host}/{$bbs}/subject.txt";
+            if ($_conf['2ch_ssl.subject']) {
+                $url = "https://{$host}/{$bbs}/subject.txt";
+            } else {
+                $url = "http://{$host}/{$bbs}/subject.txt";
+            }
             $file = P2Util::datDirOfHostBbs($host, $bbs) . 'subject.txt';
 
             $isOldFile[$key] = false;

@@ -530,6 +530,9 @@ EOJS;
             $msg = preg_replace('/&amp(?=[^;])/', '&', $msg);
         }
 
+		// サロゲートペアの数値文字参照を変換
+        $msg = P2Util::replaceNumericalSurrogatePair($msg);
+		
         // &補正
         $msg = preg_replace('/&(?!#?\\w+;)/', '&amp;', $msg);
 
@@ -560,7 +563,7 @@ EOJS;
         $msg = $this->transLink($msg);
 
         // Wikipedia記法への自動リンク
-        if ($_conf['_linkToWikipeida']) {
+        if ($_conf['link_wikipedia']) {
             $msg = $this->_wikipediaFilter($msg);
         }
 
@@ -1389,6 +1392,7 @@ EOJS;
             $serial++;
             $thumb_id = 'thumbs' . $serial . $this->thumb_id_suffix;
             $tmp_thumb = './img/ic_load.png';
+            $result = '';
 
             $icdb = new ImageCache2_DataObject_Images();
 
@@ -1429,6 +1433,8 @@ EOJS;
                 // サムネイルが作成されていているときは画像を直接読み込む
                 if (file_exists($this->thumbnailer->thumbPath($icdb->size, $icdb->md5, $icdb->mime))) {
                     $thumb_url = $this->thumbnailer->thumbUrl($icdb->size, $icdb->md5, $icdb->mime);
+                    $update = null;
+
                     // 自動スレタイメモ機能がONでスレタイが記録されていないときはDBを更新
                     if (!is_null($this->img_memo) && strpos($icdb->memo, $this->img_memo) === false){
                         $update = new ImageCache2_DataObject_Images();
@@ -1568,7 +1574,9 @@ EOJS;
         $backlinks = $this->getQuotebacksJson();
         $colors = array();
         $backlink_colors = join(',',
-            array_map(create_function('$x', 'return "\'{$x}\'";'),
+            array_map(function ($x) {
+                return "\'{$x}\'";
+            },
                 explode(',', $_conf['backlink_coloring_track_colors']))
         );
         $prefix = $this->_matome ? "t{$this->_matome}" : '';
@@ -1642,8 +1650,11 @@ EOJS;
         }
         $hissiCount = $_conf['coloredid.rate.hissi.times'];
         $mark_colors = join(',',
-            array_map(create_function('$x', 'return "\'{$x}\'";'),
-                explode(',', $_conf['coloredid.marking.colors']))
+            array_map(function ($x) {
+                return "\'{$x}\'";
+            },
+                explode(',', $_conf['coloredid.marking.colors'])
+            )
         );
         $fontstyle_bold = empty($STYLE['fontstyle_bold']) ? 'normal' : $STYLE['fontstyle_bold'];
         $fontweight_bold = empty($STYLE['fontweight_bold']) ? 'normal' : $STYLE['fontweight_bold'];

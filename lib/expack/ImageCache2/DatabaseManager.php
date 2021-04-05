@@ -24,12 +24,7 @@ class ImageCache2_DatabaseManager
 
         // トランザクションの開始
         $ta = new ImageCache2_DataObject_Images();
-        $db = $ta->getDatabaseConnection();
-        if ($db->phptype == 'pgsql') {
-            $ta->query('BEGIN');
-        } elseif ($db->phptype == 'sqlite') {
-            $db->query('BEGIN;');
-        }
+        $ta->PDO()->beginTransaction();
 
         // 画像データを更新
         foreach ($updated as $id => $data) {
@@ -56,11 +51,7 @@ class ImageCache2_DatabaseManager
         }
 
         // トランザクションのコミット
-        if ($db->phptype == 'pgsql') {
-            $ta->query('COMMIT');
-        } elseif ($db->phptype == 'sqlite') {
-            $db->query('COMMIT;');
-        }
+        $ta->PDO()->commit();
     }
 
     // }}}
@@ -93,12 +84,7 @@ class ImageCache2_DatabaseManager
 
         // トランザクションの開始
         $ta = new ImageCache2_DataObject_Images();
-        $db = $ta->getDatabaseConnection();
-        if ($db->phptype == 'pgsql') {
-            $ta->query('BEGIN');
-        } elseif ($db->phptype == 'sqlite') {
-            $db->query('BEGIN;');
-        }
+        $ta->PDO()->beginTransaction();
 
         // 画像を削除
         $parent_dir = dirname($ini['General']['cachedir']) . DIRECTORY_SEPARATOR;
@@ -159,8 +145,10 @@ class ImageCache2_DatabaseManager
                 while ($remover->fetch()) {
                     // ブラックリスト送りにする
                     if ($to_blacklist) {
-                        $blacklist = clone $_blacklist;
+                        $blacklist = new ImageCache2_DataObject_BlackList();
                         $blacklist->uri = $remover->uri;
+                        $blacklist->size = $remover->size;
+                        $blacklist->md5 = $remover->md5;
                         $blacklist->insert();
                     }
                     // テーブルから抹消
@@ -170,11 +158,7 @@ class ImageCache2_DatabaseManager
         }
 
         // トランザクションのコミット
-        if ($db->phptype == 'pgsql') {
-            $ta->query('COMMIT');
-        } elseif ($db->phptype == 'sqlite') {
-            $db->query('COMMIT;');
-        }
+        $ta->PDO()->commit();
 
         return $removed_files;
     }
@@ -191,16 +175,15 @@ class ImageCache2_DatabaseManager
             return;
         }
         if (!is_array($target)) {
-            if (is_integer($updated) || ctype_digit($updated)) {
-                $id = (int)$updated;
+            if (is_integer($target) || ctype_digit($target)) {
+                $id = (int)$target;
                 if ($id > 0) {
-                    $updated = array($id);
+                    $target = array($id);
                 } else {
                     return;
                 }
             } else {
                 P2Util::pushInfoHtml('<p>WARNING! ImageCache2_DatabaseManager::setRank(): 不正な引数</p>');
-                return $removed_files;
             }
         }
 
@@ -224,27 +207,22 @@ class ImageCache2_DatabaseManager
             return;
         }
         if (!is_array($target)) {
-            if (is_integer($updated) || ctype_digit($updated)) {
-                $id = (int)$updated;
+            if (is_integer($target) || ctype_digit($target)) {
+                $id = (int)$target;
                 if ($id > 0) {
-                    $updated = array($id);
+                    $target = array($id);
                 } else {
                     return;
                 }
             } else {
                 P2Util::pushInfoHtml('<p>WARNING! ImageCache2_DatabaseManager::addMemo(): 不正な引数</p>');
-                return $removed_files;
+                return;
             }
         }
 
         // トランザクションの開始
         $ta = new ImageCache2_DataObject_Images();
-        $db = $ta->getDatabaseConnection();
-        if ($db->phptype == 'pgsql') {
-            $ta->query('BEGIN');
-        } elseif ($db->phptype == 'sqlite') {
-            $db->query('BEGIN;');
-        }
+        $db = $ta->PDO()->beginTransaction();
 
         // メモに指定文字列が含まれていなければ更新
         foreach ($target as $id) {
@@ -265,11 +243,7 @@ class ImageCache2_DatabaseManager
         }
 
         // トランザクションのコミット
-        if ($db->phptype == 'pgsql') {
-            $ta->query('COMMIT');
-        } elseif ($db->phptype == 'sqlite') {
-            $db->query('COMMIT;');
-        }
+        $ta->PDO()->commit();
     }
 
     // }}}

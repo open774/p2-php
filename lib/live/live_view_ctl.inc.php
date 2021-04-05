@@ -64,6 +64,7 @@ if ($mail) {
 
 // [これにレス] の方法
 if ($_GET['live']) {
+    $res_dblclc = "";
 	$ttitle_en_q ="&amp;ttitle_en=".UrlSafeBase64::encode($this->thread->ttitle);
 	// 内容をダブルクリック
 	if ($_conf['live.res_button'] >= 1) {

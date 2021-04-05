@@ -1980,6 +1980,31 @@ ERR;
     }
 
     // }}}
+    // {{{ replaceNumericalSurrogatePair()
+
+    /**
+     * 文字列内にサロゲートペアの数値文字参照があれば結合した数値文字参照に置き換える
+     *
+     * @access  public
+     * @param   string $str
+     * @return  string  
+     */
+    static public function replaceNumericalSurrogatePair($str)
+    {
+        //  55296-56319 と 56320-57343 の範囲の組み合わせなので &#5xxxx;&#5xxxx; で絞って探す 
+		return preg_replace_callback('/&#(5[5-6]\\d{3});&#(5[6-7]\\d{3});/',
+		    function ($matches) {
+                //  サロゲートペアの範囲なら合成した数値文字参照にして置き換え
+			    if ($matches[1] >= 0xD800 && $matches[1] <= 0xDBFF && $matches[2] >= 0xDC00 && $matches[2] <= 0xDFFF) {
+			    	return sprintf("&#%d;", (($matches[1] & 0x3FF) << 10) + ($matches[2] & 0x3FF) + 0x10000);
+			    }
+                //  範囲外はそのまま
+                return $matches[0];
+		    },
+		    $str);
+    }
+
+    // }}}
     // {{{ debug()
     /*
     static public function debug()

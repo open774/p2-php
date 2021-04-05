@@ -100,7 +100,7 @@ class SubjectTxt
             $modified && $req->setHeader("If-Modified-Since", $modified);
 
             $response = P2Commun::getHTTPResponse($req);
-
+            $body = '';
             $code = $response->getStatus();
             if ($code == 302) {
                 // ƒzƒXƒg‚ÌˆÚ“]‚ğ’ÇÕ
